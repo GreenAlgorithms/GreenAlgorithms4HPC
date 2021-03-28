@@ -39,7 +39,7 @@ the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 Now, anyone with access to `the_shared_directory` can run the calculator, 
 by running the same command, with various options available:
 ```
-usage: GreenAlgorithms_global.py [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
+usage: myCarbonFootprint.sh [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--reportBug] [--reportBugHere]
 
 Calculate your carbon footprint on YOUR_CLUSTER.
