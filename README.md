@@ -30,7 +30,7 @@ For now, the default code is based on SLURM.
 
 6. Run the script a first time. It will check that the correct version of python is used 
 and will create the virtualenv with the required packages, based on `requirements.txt`:
-```bash
+```shell script
 the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 ```
 
@@ -38,7 +38,7 @@ the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 
 Now, anyone with access to `the_shared_directory` can run the calculator, 
 by running the same command, with various options available:
-```
+```shell script
 usage: myCarbonFootprint.sh [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--reportBug] [--reportBugHere]
 
