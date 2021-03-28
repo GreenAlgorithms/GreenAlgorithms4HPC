@@ -38,7 +38,7 @@ the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 
 Now, anyone with access to `the_shared_directory` can run the calculator, 
 by running the same command, with various options available:
-```shell script
+```
 usage: myCarbonFootprint.sh [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--reportBug] [--reportBugHere]
 
