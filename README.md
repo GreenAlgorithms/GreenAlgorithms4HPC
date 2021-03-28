@@ -1,4 +1,4 @@
-# Green Algorithms for High Power Computing
+# Green Algorithms for High Performance Computing
 
 This code can be used to easily implement the Green Algorithms calculator on a cluster. 
 
@@ -38,7 +38,7 @@ the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 
 Now, anyone with access to `the_shared_directory` can run the calculator, 
 by running the same command, with various options available:
-```bash
+```
 usage: GreenAlgorithms_global.py [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--reportBug] [--reportBugHere]
 
