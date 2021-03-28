@@ -262,6 +262,7 @@ def main(args, cluster_info, fParams):
         elif args.reportBugHere:
             log_path = f'{os.getcwd()}/sacctOutput_{log_name}.csv'
 
+        os.makedirs(os.path.dirname(log_path), exist_ok=True) # Create error_logs dir if needed
         with open(log_path, 'wb') as f:
             f.write(WM.logs_raw)
         print(f"SLURM statistics logged for debuging: {log_path}")
