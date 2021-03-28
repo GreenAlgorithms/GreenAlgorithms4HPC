@@ -1,0 +1,29 @@
+
+## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
+##
+## Settings for CSD3 (University of Cambridge)
+##
+
+---
+cluster_name: "CSD3"
+granularity_memory_request: 6 # in GB
+partitions:
+  skylake:
+    type: CPU # CPU or GPU
+    model: "Xeon Gold 6142"
+    TDP: 9.4 # in W, per core
+  skylake-himem:
+    type: CPU
+    model: "Xeon Gold 6142"
+    TDP: 9.4
+  cardio:
+    type: CPU
+    model: "Xeon E5-2660 v3"
+    TDP: 10.5
+  pascal:
+    type: GPU
+    model: Tesla P100 PCIe
+    TDP: 250 # in W, for the entire GPU
+    TDP_CPU: 9.4 # Same as skylake
+PUE: 1.15 # > 1
+CI: 253.19 # carbon intensity, in gCO2e/kWh
