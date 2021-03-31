@@ -32,7 +32,7 @@ The aim of this code is to implement the Green Algorithms framework (more [here]
 4. Edit `GreenAlgorithms_workloadManager.py` to tailor it to your workload manager. 
 For now, the default code is based on SLURM.
 
-5. Edit `cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster.
+5. Edit `cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster. You can find a lot of useful values on the Green Algorithms GitHub: https://github.com/GreenAlgorithms/green-algorithms-tool/tree/master/data
 
 6. Run the script a first time. It will check that the correct version of python is used 
 and will create the virtualenv with the required packages, based on `requirements.txt`:
