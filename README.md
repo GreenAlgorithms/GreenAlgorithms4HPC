@@ -2,8 +2,6 @@
 
 ⚠️ We are still trialing the system, please get in touch with any bugs you find!
 
-[![GitHub version](https://badge.fury.io/gh/conventional-changelog%2Fstandard-version.svg)](https://badge.fury.io/gh/conventional-changelog%2Fstandard-version)
-
 The aim of this code is to implement the Green Algorithms framework (more [here](https://arxiv.org/abs/2007.07610) and on [www.green-algorithms.org](www.green-algorithms.org)) directly on HPC clusters.
 
 **How does it work?** First, it pulls usage statistics from the workload manager's logs and then it estimate the carbon footprint based on this usage.
