@@ -1,12 +1,18 @@
 # Green Algorithms for High Performance Computing
 
-This code can be used to easily implement the Green Algorithms calculator on a cluster. 
+⚠️ We are still trialing the system, please get in touch with any bugs you find!
 
-More info about the method: [preprint on arXiv](https://arxiv.org/abs/2007.07610) 
-and [www.green-algorithms.org](www.green-algorithms.org)
+[![GitHub version](https://badge.fury.io/gh/conventional-changelog%2Fstandard-version.svg)](https://badge.fury.io/gh/conventional-changelog%2Fstandard-version)
+
+The aim of this code is to implement the Green Algorithms framework (more [here](https://arxiv.org/abs/2007.07610) and on [www.green-algorithms.org](www.green-algorithms.org)) directly on HPC clusters.
+
+**How does it work?** First, it pulls usage statistics from the workload manager's logs and then it estimate the carbon footprint based on this usage.
+
 
 ### Requirements
 - Python 3.7 
+
+*(can probably be adjusted to older versions of python fairly easily)*
 
 ## How to install it
 
@@ -54,7 +60,7 @@ optional arguments:
                         (default: today)
   --filterCWD           Only report on jobs launched from the current
                         location.
-  --reportBug           In case of a bug, this flag logs jobs informations so
+  --reportBug           In case of a bug, this flag logs jobs informations next to `myCarbonFootprint.sh` so
                         that we can fix it. Note that this will write out some
                         basic information about your jobs, such as runtime,
                         number of cores and memory usage.
