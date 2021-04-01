@@ -65,3 +65,10 @@ optional arguments:
   --reportBugHere       Similar to --reportBug, but exports the output to your
                         home folder
 ```
+
+## How to update the code without overwriting local changes:
+```
+git stash
+git pull
+git stash pop
+```

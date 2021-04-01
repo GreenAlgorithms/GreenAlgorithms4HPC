@@ -1,6 +1,6 @@
 # Project specific
 .idea/
-cluster_info.yaml
+clustersData/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
