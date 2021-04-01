@@ -1,0 +1,20 @@
+
+## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
+##
+## 1. Fill in the values for your cluster
+##
+
+---
+cluster_name: "My cluster" # [str]
+granularity_memory_request: 6 # [number] in GB,
+partitions: # a list of the different partitions on the cluster
+  partition_1: # name of the partition
+    type: CPU # [CPU or GPU]
+    model: "Intel XXX" # [str] the model of the processing core on this partition
+    TDP: 9.4 # [number] TDP of the processor, in W, per core
+  partition_2:
+    type: GPU
+    model: "NVIDIA XXXX"
+    TDP: 250 # For GPUs, the TDP is for the entire GPU
+PUE: 1.15 # [number > 1] Power Usage Effectiveness of the facility
+CI: 467 # [number] carbon intensity of the geographic location, in gCO2e/kWh
