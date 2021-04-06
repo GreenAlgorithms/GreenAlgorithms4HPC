@@ -198,13 +198,16 @@ class GreenAlgorithms(Helpers_GA):
         ### Find list of partitions corresponding to GPUs
         list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU']
 
+        ### about cluster name
+        clusterName = cluster_info['cluster_name']
+
         self.report = f'''
-          ###################################
-          #                                 #
-          #  Your carbon footprint on CSD3  #
-          #    ({self.args.startDay} / {self.args.endDay})    #
-          #                                 #
-          ###################################
+          ############################{'#'*len(clusterName)}###
+          #                           {' '*len(clusterName)}  #
+          #  Your carbon footprint on {clusterName}  #
+          #  {' '*(math.floor(len(clusterName)/2))}({self.args.startDay} / {self.args.endDay}){' '*(math.ceil(len(clusterName)/2))}  #
+          #                           {' '*len(clusterName)}  #
+          ############################{'#'*len(clusterName)}###
 
                   {'-' * (len(text_footprint) + 6)}
                  |   {text_footprint}   |
