@@ -8,6 +8,7 @@ import os
 import argparse
 import yaml
 import datetime
+import math
 
 from GreenAlgorithms_workloadManager import WorkloadManager
 
