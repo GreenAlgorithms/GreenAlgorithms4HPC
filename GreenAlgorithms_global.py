@@ -202,6 +202,10 @@ class GreenAlgorithms(Helpers_GA):
         ### about cluster name
         clusterName = cluster_info['cluster_name']
 
+        ### Energy overheads
+        totalEnergy = self.df.energy.sum()
+        dcOverheads = totalEnergy - self.df.energy_CPUs.sum() - self.df.energy_GPUs.sum() - self.df.energy_memory.sum()
+
         self.report = f'''
           ############################{'#'*len(clusterName)}###
           #                           {' '*len(clusterName)}  #
@@ -222,10 +226,11 @@ class GreenAlgorithms(Helpers_GA):
         ...On average, you request {self.df.memOverallocationFactorX.mean():.1f} times the memory you need.
            By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
         {text_filterCWD}
-        Energy used: {self.df.energy.sum():,.2f} kWh
-             - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / self.df.energy.sum(), 2):.0%})
-             - GPUs: {self.df.energy_GPUs.sum():,.2f} kWh ({round(self.df.energy_GPUs.sum() / self.df.energy.sum(), 2):.0%})
-             - Memory: {self.df.energy_memory.sum():,.2f} kWh ({round(self.df.energy_memory.sum() / self.df.energy.sum(), 2):.0%})
+        Energy used: {totalEnergy:,.2f} kWh
+             - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / totalEnergy, 2):.0%})
+             - GPUs: {self.df.energy_GPUs.sum():,.2f} kWh ({round(self.df.energy_GPUs.sum() / totalEnergy, 2):.0%})
+             - Memory: {self.df.energy_memory.sum():,.2f} kWh ({round(self.df.energy_memory.sum() / totalEnergy, 2):.0%})
+             - Data centre overheads: {dcOverheads:,.2f} kWh ({round(dcOverheads / totalEnergy, 2):.0%})
 
         Summary of your usage: 
              - First/last job recorded on that period: {str(self.df.SubmitDatetimeX.min().date())}/{str(self.df.SubmitDatetimeX.max().date())}
