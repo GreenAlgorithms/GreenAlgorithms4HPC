@@ -10,6 +10,7 @@ import yaml
 import datetime
 import math
 import sys
+import pandas as pd
 
 from GreenAlgorithms_workloadManager import WorkloadManager
 
@@ -200,6 +201,11 @@ class GreenAlgorithms(Helpers_GA):
         ### Find list of partitions corresponding to GPUs
         list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU']
 
+        ### If there is no GPU time
+        totalGPUusageTime = self.df.loc[self.df.PartitionX.isin(list_GPUs_partitions)].WallclockTimeX.sum()
+        if pd.isnull(totalGPUusageTime):
+            totalGPUusageTime = 0
+
         ### about cluster name
         clusterName = cluster_info['cluster_name']
 
@@ -237,7 +243,7 @@ class GreenAlgorithms(Helpers_GA):
              - First/last job recorded on that period: {str(self.df.SubmitDatetimeX.min().date())}/{str(self.df.SubmitDatetimeX.max().date())}
              - Number of jobs: {len(self.df):,}
              - Total CPU usage time: {str(self.df.TotalCPUtimeX.sum())}
-             - Total GPU usage time {str(self.df.loc[self.df.PartitionX.isin(list_GPUs_partitions)].WallclockTimeX.sum())}
+             - Total GPU usage time: {str(totalGPUusageTime)}
              - Total wallclock time: {str(self.df.WallclockTimeX.sum())}
              - Total memory requested: {self.df.ReqMemX.sum():,.0f} GB
 
@@ -329,8 +335,20 @@ if __name__ == "__main__":
         Note that this will write out some basic information about your jobs, such as runtime, number of cores and memory usage.')
     parser.add_argument('--reportBugHere', action='store_true',
                         help='Similar to --reportBug, but exports the output to your home folder')
+    # Arguments for debugging
+    parser.add_argument('--useLoggedOutput', type=str, default='', help=argparse.SUPPRESS)
+    parser.add_argument('--useOtherClusterInfo', type=str, default='', help=argparse.SUPPRESS)
 
     args = parser.parse_args()
+
+    # For debuging, load custom cluster info
+    if args.useOtherClusterInfo != '':
+        print(f"Overrriding cluster_info with: {args.useOtherClusterInfo}")
+        with open(os.path.join('clustersData', args.useOtherClusterInfo), "r") as stream:
+            try:
+                cluster_info = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
 
     ### Set the WD to filter on, if needed
     if args.filterCWD:

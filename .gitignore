@@ -1,6 +1,7 @@
 # Project specific
 .idea/
 clustersData/
+testData/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

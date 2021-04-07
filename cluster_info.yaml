@@ -1,9 +1,7 @@
-
-## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
 ##
-## 1. Fill in the values for your cluster
-## 2. Rename this
-
+## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
+## Fill in the values for your cluster
+##
 ---
 cluster_name: "My cluster" # [str]
 granularity_memory_request: 6 # [number] in GB,
@@ -16,5 +14,9 @@ partitions: # a list of the different partitions on the cluster
     type: GPU
     model: "NVIDIA XXXX"
     TDP: 250 # For GPUs, the TDP is for the entire GPU
-PUE: 1.15 # [number > 1] Power Usage Effectiveness of the facility
+PUE: 1.67 # [number > 1] Power Usage Effectiveness of the facility
 CI: 467 # [number] carbon intensity of the geographic location, in gCO2e/kWh
+#
+# Below are optional parameters to accommodate some clusters. Do not remove but can be ignored.
+#
+default_unit_RSS: 'K'

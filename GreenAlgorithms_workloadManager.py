@@ -8,6 +8,7 @@ import subprocess
 import pandas as pd
 from io import BytesIO
 import datetime
+import os
 
 class Helpers_WM():
 
@@ -49,17 +50,23 @@ class Helpers_WM():
 
         return memory
 
-    def clean_RSS(self, x):
+    def clean_RSS(self, x, cluster_info):
         '''
         Clean the RSS value in sacct output.
-        :param x: [NaN or str] the RSS value, either NaN or of the form '2745K'.
+        :param x: [NaN or str] the RSS value, either NaN or of the form '2745K'
+        (optionally, just a number, we then use default_unit_RSS from cluster_info.yaml as unit).
         :return: [float] RSS value, in GB.
         '''
         if pd.isnull(x)|(x=='0'):
             memory = 0
         else:
             assert type(x) == str
-            memory = self.convert_to_GB(float(x[:-1]),x[-1])
+            # Special case for the situation where MaxRSS is of the form '154264' without a unit.
+            if x[-1].isalpha():
+                memory = self.convert_to_GB(float(x[:-1]),x[-1])
+            else:
+                assert 'default_unit_RSS' in cluster_info, "Some values of MaxRSS don't have a unit. Please specify a default_unit_RSS in cluster_info.yaml"
+                memory = self.convert_to_GB(float(x), cluster_info['default_unit_RSS'])
 
         return memory
 
@@ -163,9 +170,13 @@ class WorkloadManager(Helpers_WM):
             "-P"
         ]
 
-        logs = subprocess.run(bash_com, capture_output=True)
-
-        self.logs_raw = logs.stdout
+        if self.args.useLoggedOutput == '':
+            logs = subprocess.run(bash_com, capture_output=True)
+            self.logs_raw = logs.stdout
+        else:
+            print(f"Overrriding logs_raw with: {self.args.useLoggedOutput}")
+            with open(os.path.join('testData', self.args.useLoggedOutput), 'rb') as f:
+                self.logs_raw = f.read()
 
     def convert2dataframe(self):
         '''
@@ -186,7 +197,7 @@ class WorkloadManager(Helpers_WM):
         self.logs_df['ReqMemX'] = self.logs_df.apply(self.calc_ReqMem, axis=1)
 
         ### Clean MaxRSS
-        self.logs_df['UsedMemX'] = self.logs_df.MaxRSS.apply(self.clean_RSS)
+        self.logs_df['UsedMemX'] = self.logs_df.MaxRSS.apply(self.clean_RSS, cluster_info=self.cluster_info)
 
         ### Parse wallclock time
         self.logs_df['WallclockTimeX'] = self.logs_df['Elapsed'].apply(self.parse_timedelta)
