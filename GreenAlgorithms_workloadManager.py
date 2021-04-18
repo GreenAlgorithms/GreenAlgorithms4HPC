@@ -141,6 +141,18 @@ class Helpers_WM():
         '''
         return min(x.ReqMemX,(int(x.UsedMemX/granularity_memory_request)+1)*granularity_memory_request)
 
+    def clean_State(self, x):
+        '''
+        Standardise the job's state, coding with {-1,0,1}
+        :param x: [str] "State" field from sacct output
+        :return: [int] in [-1,0,1]
+        '''
+        if x in ['CD','COMPLETED']:
+            return 1
+        elif x in ['PD','PENDING','R','RUNNING','RQ','REQUEUED']:
+            return -1
+        else:
+            return 0
 
 
 class WorkloadManager(Helpers_WM):
@@ -166,7 +178,7 @@ class WorkloadManager(Helpers_WM):
             "--endtime",
             self.args.endDay,  # format YYYY-MM-DD
             "--format",
-            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,ReqMem,MaxRSS,WorkDir",
+            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,ReqMem,MaxRSS,WorkDir,State",
             "-P"
         ]
 
@@ -228,11 +240,14 @@ class WorkloadManager(Helpers_WM):
         ### Working directory
         self.logs_df['WorkingDirX'] = self.logs_df.WorkDir
 
+        ### State
+        self.logs_df['StateX'] = self.logs_df.State.apply(self.clean_State)
+
         ### Pull jobID
         self.logs_df['single_jobID'] = self.logs_df.JobID.apply(lambda x: x.split('.')[0])
 
         ### Aggregate per jobID
-        self.df_agg = self.logs_df.groupby('single_jobID').agg({
+        self.df_agg_0 = self.logs_df.groupby('single_jobID').agg({
             'TotalCPUtimeX': 'max',
             'WallclockTimeX': 'max',
             'ReqMemX': 'max',
@@ -243,7 +258,11 @@ class WorkloadManager(Helpers_WM):
             'JobNameX': 'first',
             'SubmitDatetimeX': 'min',
             'WorkingDirX': 'first',
+            'StateX': 'min',
         })
+
+        ### Remove jobs that are still running or currently queued
+        self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -1]
 
         ### Calculate real memory need
         self.df_agg['NeededMemX'] = self.df_agg.apply(
