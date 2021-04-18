@@ -181,6 +181,12 @@ class GreenAlgorithms(Helpers_GA):
         footprint_realVmem = self.df.carbonFootprint.sum() - self.df.carbonFootprint_memoryNeededOnly.sum()
         text_footprint_memoryNeededOnly = self.formatText_footprint(footprint_realVmem)
 
+        # Failed jobs
+        assert set(self.df.StateX) <= {0,1}
+        df_failedJobs = self.df.loc[self.df.StateX == 0]
+        footprint_g_failed = df_failedJobs.carbonFootprint.sum()
+        text_footprint_failed = self.formatText_footprint(footprint_g_failed)
+
         # Equivalence tree months
         tm_float = footprint_g / self.fParams['tree_month']
         text_trees = self.formatText_treemonths(tm_float)
@@ -232,6 +238,8 @@ class GreenAlgorithms(Helpers_GA):
 
         ...On average, you request {self.df.memOverallocationFactorX.mean():.1f} times the memory you need.
            By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
+        
+        ...{len(df_failedJobs)/len(self.df):.1%} of your jobs failed, which represents a waste of {text_footprint_failed} ({footprint_g_failed / self.fParams['tree_month']:,.2f} tree-months).
         {text_filterCWD}
         Energy used: {totalEnergy:,.2f} kWh
              - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / totalEnergy, 2):.0%})
@@ -241,7 +249,7 @@ class GreenAlgorithms(Helpers_GA):
 
         Summary of your usage: 
              - First/last job recorded on that period: {str(self.df.SubmitDatetimeX.min().date())}/{str(self.df.SubmitDatetimeX.max().date())}
-             - Number of jobs: {len(self.df):,}
+             - Number of jobs: {len(self.df):,} ({len(self.df.loc[self.df.StateX == 1]):,} completed)
              - Total CPU usage time: {str(self.df.TotalCPUtimeX.sum())}
              - Total GPU usage time: {str(totalGPUusageTime)}
              - Total wallclock time: {str(self.df.WallclockTimeX.sum())}
