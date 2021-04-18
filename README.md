@@ -67,8 +67,4 @@ optional arguments:
 ```
 
 ## How to update the code without overwriting local changes:
-```
-git stash
-git pull
-git stash pop
-```
+_TBC_

@@ -34,7 +34,7 @@ if [ ! -f GA_env/bin/activate ]; then
   source GA_env/bin/activate
   pip3 install -r requirements.txt
 else
-  echo "Virtualenv OK"
+  echo "Virtualenv: OK"
   source GA_env/bin/activate
 fi
 
