@@ -11,6 +11,7 @@ import datetime
 import math
 import sys
 import pandas as pd
+import pathlib
 
 from GreenAlgorithms_workloadManager import WorkloadManager
 
@@ -283,6 +284,8 @@ def main(args, cluster_info, fParams):
 
         if args.reportBug:
             log_path = os.path.join(scripts_dir, 'error_logs', f'sacctOutput_{log_name}.csv')
+            # Logging into a seperate dir to write-protect the main one (not in place for now)
+            # log_path = os.path.join(pathlib.Path(scripts_dir).parent.absolute(), 'GreenAlgorithms4HPC_errorLogs', f'sacctOutput_{log_name}.csv')
         elif args.reportBugHere:
             log_path = f'{os.getcwd()}/sacctOutput_{log_name}.csv'
 
