@@ -42,7 +42,7 @@ optional arguments:
 
 ## How to install it
 
-(Only need to be installed once on a cluster, check first that someone else hasn't installed it yet!)
+(Only needs to be installed once on a cluster, check first that someone else hasn't installed it yet!)
 
 1. Clone this repository in a shared directory on your cluster:
     ```bash
