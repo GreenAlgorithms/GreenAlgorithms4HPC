@@ -12,7 +12,8 @@ Now, anyone with access to `the_shared_directory` can run the calculator,
 by running the same command, with various options available:
 ```
 usage: myCarbonFootprint.sh [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
-                                 [--reportBug] [--reportBugHere]
+                            [--filterJobIDs FILTERJOBIDS] [--reportBug] 
+                            [--reportBugHere]
 
 Calculate your carbon footprint on YOUR_CLUSTER.
 
@@ -26,6 +27,8 @@ optional arguments:
                         (default: today)
   --filterCWD           Only report on jobs launched from the current
                         location.
+  --filterJobIDs FILTERJOBIDS
+                        Comma seperated list of Job IDs you want to filter on.
   --reportBug           In case of a bug, this flag logs jobs informations next to `myCarbonFootprint.sh` so
                         that we can fix it. Note that this will write out some
                         basic information about your jobs, such as runtime,
