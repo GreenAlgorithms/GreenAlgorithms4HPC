@@ -154,6 +154,16 @@ class Helpers_WM():
         else:
             return 0
 
+    def get_parent_jobID(self, x):
+        '''
+        Get the parent job ID in case of array jobs
+        :param x: [str] JobID of the form 123456789_0 (with or without '_0')
+        :return: [str] Parent ID 123456789
+        '''
+        foo = x.split('_')
+        assert len(foo) <= 2, f"Can't parse the job ID: {x}"
+        return foo[0]
+
 
 class WorkloadManager(Helpers_WM):
 
@@ -278,3 +288,10 @@ class WorkloadManager(Helpers_WM):
         if self.args.filterWD is not None:
             self.df_agg = self.df_agg.loc[self.df_agg.WorkingDirX == self.args.filterWD]
 
+        ### Filter on Job ID
+        self.df_agg.reset_index(inplace=True)
+        self.df_agg['parentJobID'] = self.df_agg.single_jobID.apply(self.get_parent_jobID)
+
+        if self.args.filterJobIDs != 'all':
+            list_jobs2keep = self.args.filterJobIDs.split(',')
+            self.df_agg = self.df_agg.loc[self.df_agg.parentJobID.isin(list_jobs2keep)]

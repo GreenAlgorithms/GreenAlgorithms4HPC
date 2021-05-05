@@ -39,17 +39,21 @@ class validity_checks():
         bar = datetime.datetime.strptime(args.endDay, '%Y-%m-%d')
         assert foo <= bar, f"Start date ({args.startDay}) is after the end date ({args.endDay})."
 
-    def check_empty_results(self, df, filterWD=None):
+    def check_empty_results(self, df, filterWD=None, filterJobIDs='all'):
         '''
         This is to check whether any jobs have been run on the period, and stop the script if not.
         :param df: [pd.DataFrame] Usage logs
         :param filterWD: [None or str, default=None] Whether the results are filtered based on working directory.
+        :param filterJobIDs: [str] 'all' or comma-seperated list of job IDs
         '''
         if len(df) == 0:
             if filterWD is not None:
                 addThat = ' from this directory'
             else:
                 addThat = ''
+            if filterJobIDs != 'all':
+                addThat += ' and with these jobIDs'
+
             print(f'''
 
         You haven't run any jobs on that period (from {self.startDay} to {self.endDay}){addThat}.
@@ -205,6 +209,12 @@ class GreenAlgorithms(Helpers_GA):
         else:
             text_filterCWD = f"\n        (NB: The only jobs considered here are those launched from {self.args.filterWD})\n"
 
+        ### Text filterJobIDs
+        if self.args.filterJobIDs == 'all':
+            text_filterJobIDs = ''
+        else:
+            text_filterJobIDs = f"\n        (NB: The only jobs considered here are those with job IDs: {self.args.filterJobIDs})\n"
+
         ### Find list of partitions corresponding to GPUs
         list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU']
 
@@ -241,7 +251,7 @@ class GreenAlgorithms(Helpers_GA):
            By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
         
         ...{len(df_failedJobs)/len(self.df):.1%} of your jobs failed, which represents a waste of {text_footprint_failed} ({footprint_g_failed / self.fParams['tree_month']:,.2f} tree-months).
-        {text_filterCWD}
+        {text_filterCWD}{text_filterJobIDs}
         Energy used: {totalEnergy:,.2f} kWh
              - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / totalEnergy, 2):.0%})
              - GPUs: {self.df.energy_GPUs.sum():,.2f} kWh ({round(self.df.energy_GPUs.sum() / totalEnergy, 2):.0%})
@@ -301,8 +311,8 @@ def main(args, cluster_info, fParams):
 
     ### Clean the usage logs
     WM.clean_logs_df()
-    # Check if there are any jobs during the period from this directory
-    validator.check_empty_results(WM.df_agg, filterWD=args.filterWD)
+    # Check if there are any jobs during the period from this directory and with these jobIDs
+    validator.check_empty_results(WM.df_agg, filterWD=args.filterWD, filterJobIDs=args.filterJobIDs)
 
     ### Calculate energy usage and footprints
     GA = GreenAlgorithms(df=WM.df_agg, args=args, cluster_info=cluster_info, fParams=fParams)
@@ -342,6 +352,9 @@ if __name__ == "__main__":
                         default=default_endDay)
     parser.add_argument('--filterCWD', action='store_true',
                         help='Only report on jobs launched from the current location.')
+    parser.add_argument('--filterJobIDs', type=str,
+                        help='Comma seperated list of Job IDs you want to filter on.',
+                        default='all')
     parser.add_argument('--reportBug', action='store_true', help='In case of a bug, this flag logs jobs informations so that we can fix it. \
         Note that this will write out some basic information about your jobs, such as runtime, number of cores and memory usage.')
     parser.add_argument('--reportBugHere', action='store_true',
