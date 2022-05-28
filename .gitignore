@@ -2,6 +2,8 @@
 .idea/
 clustersData/
 testData/
+error_logs/
+support_files/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

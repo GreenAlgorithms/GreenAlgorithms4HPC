@@ -9,6 +9,7 @@ import pandas as pd
 from io import BytesIO
 import datetime
 import os
+import numpy as np
 
 class Helpers_WM():
 
@@ -141,6 +142,22 @@ class Helpers_WM():
         '''
         return min(x.ReqMemX,(int(x.UsedMemX/granularity_memory_request)+1)*granularity_memory_request)
 
+    def calc_coreHoursCharged(self, x, outType, cluster_info):
+
+        out = dict()
+        out['CPU'] = x['WallclockTimeX'] * x['NCPUSX'] / np.timedelta64(1, 'h')  # NB assuming just one node
+        out['GPU'] = x['WallclockTimeX'] / np.timedelta64(1, 'h')  # NB assuming only one GPU
+
+        try:
+            type_part = cluster_info['partitions'][x['PartitionX']]['type']
+            if type_part == outType:
+                return out[outType]
+            else:
+                return 0
+        except:
+            print(f"\n-!- Unknown partition: {x['PartitionX']} -!-\n")
+            return x['WallclockTimeX'] / np.timedelta64(1, 'h')
+
     def clean_State(self, x):
         '''
         Standardise the job's state, coding with {-1,0,1}
@@ -188,7 +205,7 @@ class WorkloadManager(Helpers_WM):
             "--endtime",
             self.args.endDay,  # format YYYY-MM-DD
             "--format",
-            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,ReqMem,MaxRSS,WorkDir,State",
+            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,ReqMem,MaxRSS,WorkDir,State,Account",
             "-P"
         ]
 
@@ -196,9 +213,20 @@ class WorkloadManager(Helpers_WM):
             logs = subprocess.run(bash_com, capture_output=True)
             self.logs_raw = logs.stdout
         else:
-            print(f"Overrriding logs_raw with: {self.args.useLoggedOutput}")
-            with open(os.path.join('testData', self.args.useLoggedOutput), 'rb') as f:
-                self.logs_raw = f.read()
+            foo = "Overrriding logs_raw with: "
+            try:
+                with open(os.path.join('testData', self.args.useLoggedOutput), 'rb') as f:
+                    self.logs_raw = f.read()
+                foo += f"testData/{self.args.useLoggedOutput}"
+            except:
+                try:
+                    with open(os.path.join('error_logs', self.args.useLoggedOutput), 'rb') as f:
+                        self.logs_raw = f.read()
+                    foo += f"error_logs/{self.args.useLoggedOutput}"
+                except ValueError as err:
+                    print(err.args)
+                    raise
+            print(foo)
 
     def convert2dataframe(self):
         '''
@@ -215,6 +243,8 @@ class WorkloadManager(Helpers_WM):
         Clean the different fields of the usage logs.
         NB: the name of the columns here (ending with X) need to be conserved, as they are used by the main script.
         '''
+        self.logs_df_raw = self.logs_df.copy() # DEBUGONLY Save a copy of uncleaned raw for debugging mainly
+
         ### Calculate real memory usage
         self.logs_df['ReqMemX'] = self.logs_df.apply(self.calc_ReqMem, axis=1)
 
@@ -256,6 +286,13 @@ class WorkloadManager(Helpers_WM):
         ### Pull jobID
         self.logs_df['single_jobID'] = self.logs_df.JobID.apply(lambda x: x.split('.')[0])
 
+        ### Account
+        if 'Account' in self.logs_df.columns:
+            self.logs_df['AccountX'] = self.logs_df.Account
+        else:
+            print('Using old logs, "Account" information not available.')
+            self.logs_df['AccountX'] = ''
+
         ### Aggregate per jobID
         self.df_agg_0 = self.logs_df.groupby('single_jobID').agg({
             'TotalCPUtimeX': 'max',
@@ -269,10 +306,20 @@ class WorkloadManager(Helpers_WM):
             'SubmitDatetimeX': 'min',
             'WorkingDirX': 'first',
             'StateX': 'min',
+            'AccountX': 'first'
         })
 
         ### Remove jobs that are still running or currently queued
         self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -1]
+
+        ### Calculate core-hours charged
+        for x in ['CPU','GPU']:
+            self.df_agg[f'CoreHoursCharged{x}X'] = self.df_agg.apply(
+                self.calc_coreHoursCharged,
+                outType=x,
+                cluster_info=self.cluster_info,
+                axis=1)
+        assert not ((self.df_agg.CoreHoursChargedCPUX != 0) & (self.df_agg.CoreHoursChargedGPUX != 0)).any()
 
         ### Calculate real memory need
         self.df_agg['NeededMemX'] = self.df_agg.apply(
@@ -295,3 +342,7 @@ class WorkloadManager(Helpers_WM):
         if self.args.filterJobIDs != 'all':
             list_jobs2keep = self.args.filterJobIDs.split(',')
             self.df_agg = self.df_agg.loc[self.df_agg.parentJobID.isin(list_jobs2keep)]
+
+        ### Filter on Account
+        if self.args.filterAccount is not None:
+            self.df_agg = self.df_agg.loc[self.df_agg.AccountX == self.args.filterAccount]

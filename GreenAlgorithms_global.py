@@ -39,7 +39,7 @@ class validity_checks():
         bar = datetime.datetime.strptime(args.endDay, '%Y-%m-%d')
         assert foo <= bar, f"Start date ({args.startDay}) is after the end date ({args.endDay})."
 
-    def check_empty_results(self, df, filterWD=None, filterJobIDs='all'):
+    def check_empty_results(self, df, filterWD=None, filterJobIDs='all', filterAccount=None):
         '''
         This is to check whether any jobs have been run on the period, and stop the script if not.
         :param df: [pd.DataFrame] Usage logs
@@ -53,6 +53,8 @@ class validity_checks():
                 addThat = ''
             if filterJobIDs != 'all':
                 addThat += ' and with these jobIDs'
+            if filterAccount is not None:
+                addThat += ' charged under this account'
 
             print(f'''
 
@@ -83,7 +85,7 @@ class Helpers_GA():
             TDP2use4GPU = partition_info['TDP']
 
         row['energy_CPUs'] = row.TotalCPUtimeX.total_seconds() / 3600 * TDP2use4CPU / 1000  # in kWh
-        # TODO: we assume just 1 GPU here
+        # NB: we assume just 1 GPU here with usage factor = 1
         row['energy_GPUs'] = row.WallclockTimeX.total_seconds() / 3600 * 1 * TDP2use4GPU / 1000  # in kWh
 
         ### memory
@@ -156,6 +158,26 @@ class Helpers_GA():
             text_flying = f"{footprint_g / fParams['flight_NYC_MEL']:,.2f} flights between New York and Melbourne"
         return text_flying
 
+class unitTests():
+    def __init__(self, df):
+        self.df = df
+
+    def coreHoursPerMonth(self, years):
+        print(f'\n### Core-hours charged per month (CPU / GPU / Total) ###\n')
+        today = datetime.date.today()
+        for year in range(years[0], min(years[1], today.year)+1):
+            print(year)
+            if year == today.year:
+                max_month = today.month
+            else:
+                max_month = 12
+            for month in range(1,max_month+1):
+                df_month = self.df.loc[(self.df.SubmitDatetimeX.dt.month == month)&(self.df.SubmitDatetimeX.dt.year == year)]
+                month_name = datetime.date(year,month,1).strftime("%b")
+                CPU_ch = df_month.CoreHoursChargedCPUX.sum()
+                GPU_ch = df_month.CoreHoursChargedGPUX.sum()
+                print(f'\t- {month_name}: {CPU_ch:,.2f}/{GPU_ch:,.2f}/{CPU_ch+GPU_ch:,.2f}')
+
 class GreenAlgorithms(Helpers_GA):
 
     def __init__(self, df, args, cluster_info, fParams):
@@ -215,6 +237,12 @@ class GreenAlgorithms(Helpers_GA):
         else:
             text_filterJobIDs = f"\n        (NB: The only jobs considered here are those with job IDs: {self.args.filterJobIDs})\n"
 
+        ### Text filter Account
+        if self.args.filterAccount is None:
+            text_filterAccount = ''
+        else:
+            text_filterAccount = f"\n        (NB: The only jobs considered here are those charged under {self.args.filterAccount})\n"
+
         ### Find list of partitions corresponding to GPUs
         list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU']
 
@@ -251,7 +279,7 @@ class GreenAlgorithms(Helpers_GA):
            By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
         
         ...{len(df_failedJobs)/len(self.df):.1%} of your jobs failed, which represents a waste of {text_footprint_failed} ({footprint_g_failed / self.fParams['tree_month']:,.2f} tree-months).
-        {text_filterCWD}{text_filterJobIDs}
+        {text_filterCWD}{text_filterJobIDs}{text_filterAccount}
         Energy used: {totalEnergy:,.2f} kWh
              - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / totalEnergy, 2):.0%})
              - GPUs: {self.df.energy_GPUs.sum():,.2f} kWh ({round(self.df.energy_GPUs.sum() / totalEnergy, 2):.0%})
@@ -261,6 +289,10 @@ class GreenAlgorithms(Helpers_GA):
         Summary of your usage: 
              - First/last job recorded on that period: {str(self.df.SubmitDatetimeX.min().date())}/{str(self.df.SubmitDatetimeX.max().date())}
              - Number of jobs: {len(self.df):,} ({len(self.df.loc[self.df.StateX == 1]):,} completed)
+             - Core hours used/charged:
+                - CPU: {self.df.CoreHoursChargedCPUX.sum():,.2f}
+                - GPU: {self.df.CoreHoursChargedGPUX.sum():,.2f}
+                - Total: {self.df.CoreHoursChargedCPUX.sum()+self.df.CoreHoursChargedGPUX.sum():,.2f}
              - Total CPU usage time: {str(self.df.TotalCPUtimeX.sum())}
              - Total GPU usage time: {str(totalGPUusageTime)}
              - Total wallclock time: {str(self.df.WallclockTimeX.sum())}
@@ -312,13 +344,18 @@ def main(args, cluster_info, fParams):
     ### Clean the usage logs
     WM.clean_logs_df()
     # Check if there are any jobs during the period from this directory and with these jobIDs
-    validator.check_empty_results(WM.df_agg, filterWD=args.filterWD, filterJobIDs=args.filterJobIDs)
+    validator.check_empty_results(WM.df_agg, filterWD=args.filterWD, filterJobIDs=args.filterJobIDs, filterAccount=args.filterAccount)
 
     ### Calculate energy usage and footprints
     GA = GreenAlgorithms(df=WM.df_agg, args=args, cluster_info=cluster_info, fParams=fParams)
     GA.calculate_footprint()
     GA.generate_report()
     print(GA.report)
+
+    if args.runTests != '':
+        tester = unitTests(WM.df_agg)
+        if args.runTests == 'coreHoursPerMonth':
+            tester.coreHoursPerMonth(years=(2019,2022))
 
 
 
@@ -355,6 +392,8 @@ if __name__ == "__main__":
     parser.add_argument('--filterJobIDs', type=str,
                         help='Comma seperated list of Job IDs you want to filter on.',
                         default='all')
+    parser.add_argument('--filterAccount', type=str,
+                        help='Only consider jobs charged under this account')
     parser.add_argument('--reportBug', action='store_true', help='In case of a bug, this flag logs jobs informations so that we can fix it. \
         Note that this will write out some basic information about your jobs, such as runtime, number of cores and memory usage.')
     parser.add_argument('--reportBugHere', action='store_true',
@@ -362,6 +401,7 @@ if __name__ == "__main__":
     # Arguments for debugging
     parser.add_argument('--useLoggedOutput', type=str, default='', help=argparse.SUPPRESS)
     parser.add_argument('--useOtherClusterInfo', type=str, default='', help=argparse.SUPPRESS)
+    parser.add_argument('--runTests', type=str, default='', help=argparse.SUPPRESS)
 
     args = parser.parse_args()
 

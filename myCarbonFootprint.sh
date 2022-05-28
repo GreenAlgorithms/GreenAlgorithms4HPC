@@ -38,5 +38,5 @@ else
   source GA_env/bin/activate
 fi
 
-# Check that python3 starts the correct version
+# Run the python code and pass on the arguments
 python3 GreenAlgorithms_global.py "$@"
