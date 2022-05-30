@@ -9,11 +9,13 @@ partitions: # a list of the different partitions on the cluster
   partition_1: # name of the partition
     type: CPU # [CPU or GPU]
     model: "Intel XXX" # [str] the model of the processing core on this partition
-    TDP: 9.4 # [number] TDP of the processor, in W, per core
+    TDP: 10 # [number] TDP of the processor, in W, per core
   partition_2:
     type: GPU
     model: "NVIDIA XXXX"
     TDP: 250 # For GPUs, the TDP is for the entire GPU
+    model_CPU: "Intel XXX" # from HPC team
+    TDP_CPU: 8
 PUE: 1.67 # [number > 1] Power Usage Effectiveness of the facility
 CI: 467 # [number] carbon intensity of the geographic location, in gCO2e/kWh
 #
