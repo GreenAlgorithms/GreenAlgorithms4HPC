@@ -307,6 +307,7 @@ class GreenAlgorithms(Helpers_GA):
         Any bugs, questions, suggestions? Email LL582@medschl.cam.ac.uk
         {'-' * 80}
         Calculated using the Green Algorithms framework: www.green-algorithms.org
+        Please cite https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707 
         '''
 
 def main(args, cluster_info, fParams):

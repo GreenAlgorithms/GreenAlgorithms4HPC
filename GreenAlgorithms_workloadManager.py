@@ -165,7 +165,8 @@ class Helpers_WM():
 
     def calc_GPUusage2use(self, x):
         if x.PartitionTypeX == 'GPU':
-            return x.WallclockTimeX # NB assuming only one GPU and usage factor of 100%
+            assert x.NGPUS_ != 0
+            return x.WallclockTimeX * x.NGPUS_ # NB assuming usage factor of 100% for GPUs
         else:
             return datetime.timedelta(0)
 
@@ -176,7 +177,7 @@ class Helpers_WM():
         if x.PartitionTypeX == 'CPU':
             return x.CPUwallclocktime_ / np.timedelta64(1, 'h')
         else:
-            return x.WallclockTimeX / np.timedelta64(1, 'h')  # NB assuming only one GPU
+            return x.WallclockTimeX * x.NGPUS_ / np.timedelta64(1, 'h')
 
 
     def clean_State(self, x):
@@ -227,7 +228,7 @@ class WorkloadManager(Helpers_WM):
             "--endtime",
             self.args.endDay,  # format YYYY-MM-DD
             "--format",
-            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,CPUTime,ReqMem,MaxRSS,WorkDir,State,Account",
+            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,CPUTime,ReqMem,MaxRSS,WorkDir,State,Account,AllocTres",
             "-P"
         ]
 
@@ -289,6 +290,13 @@ class WorkloadManager(Helpers_WM):
             print('Using old logs, "CPUTime" information not available.') # TODO: remove this after a while
             self.logs_df['CPUwallclocktime_'] = self.logs_df.WallclockTimeX * self.logs_df.NCPUS
 
+        ### Number of GPUs
+        if 'AllocTRES' in self.logs_df.columns:
+            self.logs_df['NGPUS_'] = self.logs_df.AllocTRES.str.extract(r'((?<=gres\/gpu=)\d+)', expand=False).fillna(0).astype('int64')
+        else:
+            print('Using old logs, "AllocTRES" information not available.')  # TODO: remove this after a while
+            self.logs_df['NGPUS_'] = 0
+
         ### Clean partition
         # Make sure it's either a partition name, or a comma-separated list of partitions
         self.logs_df['PartitionX'] = self.logs_df.Partition.apply(self.clean_partition)
@@ -330,6 +338,7 @@ class WorkloadManager(Helpers_WM):
             'ReqMemX': 'max',
             'UsedMem_': 'max',
             'NCPUS_': 'max',
+            'NGPUS_': 'max',
             'NNodes_': 'max',
             'PartitionX': lambda x: ''.join(x),
             'JobName_': 'first',
@@ -347,6 +356,14 @@ class WorkloadManager(Helpers_WM):
 
         ### Label as CPU or GPU partition
         self.df_agg['PartitionTypeX'] = self.df_agg.PartitionX.apply(self.set_partitionType)
+
+        # Just used to clean up with old logs:
+        if 'AllocTRES' not in self.logs_df.columns:
+            self.df_agg.loc[self.df_agg.PartitionTypeX == 'GPU','NGPUS_'] = 1 # TODO remove after a while
+
+        # Sanity check (no GPU logged for CPU partitions and vice versa)
+        assert (self.df_agg.loc[self.df_agg.PartitionTypeX == 'CPU'].NGPUS_ == 0).all()
+        assert (self.df_agg.loc[self.df_agg.PartitionTypeX == 'GPU'].NGPUS_ > 0).all()
 
         ### add the usage time to use for calculations
         self.df_agg['TotalCPUtime2useX'] = self.df_agg.apply(self.calc_CPUusage2use, axis=1)
