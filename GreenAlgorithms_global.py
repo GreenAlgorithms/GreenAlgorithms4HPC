@@ -75,18 +75,17 @@ class Helpers_GA():
         :return: [pd.Series] the same statistics with the energies added
         '''
         ### CPU and GPU
-        # TODO: quid NNODES>1?
         partition_info = self.cluster_info['partitions'][row.PartitionX]
-        if partition_info['type'] == 'CPU':
+        if row.PartitionTypeX == 'CPU':
             TDP2use4CPU = partition_info['TDP']
             TDP2use4GPU = 0
         else:
             TDP2use4CPU = partition_info['TDP_CPU']
             TDP2use4GPU = partition_info['TDP']
 
-        row['energy_CPUs'] = row.TotalCPUtimeX.total_seconds() / 3600 * TDP2use4CPU / 1000  # in kWh
-        # NB: we assume just 1 GPU here with usage factor = 1
-        row['energy_GPUs'] = row.WallclockTimeX.total_seconds() / 3600 * 1 * TDP2use4GPU / 1000  # in kWh
+        row['energy_CPUs'] = row.TotalCPUtime2useX.total_seconds() / 3600 * TDP2use4CPU / 1000  # in kWh
+
+        row['energy_GPUs'] = row.TotalGPUtime2useX.total_seconds() / 3600 * TDP2use4GPU / 1000  # in kWh
 
         ### memory
         for suffix, memory2use in zip(['','_memoryNeededOnly'], [row.ReqMemX,row.NeededMemX]):
@@ -163,7 +162,7 @@ class unitTests():
         self.df = df
 
     def coreHoursPerMonth(self, years):
-        print(f'\n### Core-hours charged per month (CPU / GPU / Total) ###\n')
+        print(f'\n### Core-hours charged per month (CPU / GPU (Total)) ###\n')
         today = datetime.date.today()
         for year in range(years[0], min(years[1], today.year)+1):
             print(year)
@@ -174,9 +173,9 @@ class unitTests():
             for month in range(1,max_month+1):
                 df_month = self.df.loc[(self.df.SubmitDatetimeX.dt.month == month)&(self.df.SubmitDatetimeX.dt.year == year)]
                 month_name = datetime.date(year,month,1).strftime("%b")
-                CPU_ch = df_month.CoreHoursChargedCPUX.sum()
-                GPU_ch = df_month.CoreHoursChargedGPUX.sum()
-                print(f'\t- {month_name}: {CPU_ch:,.2f}/{GPU_ch:,.2f}/{CPU_ch+GPU_ch:,.2f}')
+                CPU_ch = df_month.loc[df_month.PartitionTypeX == 'CPU'].CoreHoursChargedX.sum()
+                GPU_ch = df_month.loc[df_month.PartitionTypeX == 'GPU'].CoreHoursChargedX.sum()
+                print(f'\t- {month_name}: {CPU_ch:,.2f}/{GPU_ch:,.2f} ({CPU_ch+GPU_ch:,.2f})')
 
 class GreenAlgorithms(Helpers_GA):
 
@@ -244,12 +243,16 @@ class GreenAlgorithms(Helpers_GA):
             text_filterAccount = f"\n        (NB: The only jobs considered here are those charged under {self.args.filterAccount})\n"
 
         ### Find list of partitions corresponding to GPUs
-        list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU']
+        # list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU'] # TODO remove
 
-        ### If there is no GPU time
-        totalGPUusageTime = self.df.loc[self.df.PartitionX.isin(list_GPUs_partitions)].WallclockTimeX.sum()
-        if pd.isnull(totalGPUusageTime):
-            totalGPUusageTime = 0
+        ### If there is no GPU time # TODO remove
+        # totalGPUusageTime = self.df.loc[self.df.PartitionX.isin(list_GPUs_partitions)].WallclockTimeX.sum()
+        # if pd.isnull(totalGPUusageTime):
+        #     totalGPUusageTime = 0
+
+        ### Calculate core-hours charged
+        CPU_ch = self.df.loc[self.df.PartitionTypeX == 'CPU'].CoreHoursChargedX.sum()
+        GPU_ch = self.df.loc[self.df.PartitionTypeX == 'GPU'].CoreHoursChargedX.sum()
 
         ### about cluster name
         clusterName = cluster_info['cluster_name']
@@ -275,29 +278,31 @@ class GreenAlgorithms(Helpers_GA):
              - {text_driving}
              - {text_flying}
 
-        ...On average, you request {self.df.memOverallocationFactorX.mean():.1f} times the memory you need.
-           By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
-        
         ...{len(df_failedJobs)/len(self.df):.1%} of your jobs failed, which represents a waste of {text_footprint_failed} ({footprint_g_failed / self.fParams['tree_month']:,.2f} tree-months).
+        ...On average, you request at least {self.df.memOverallocationFactorX.mean():.1f} times the memory you need. By only requesting the memory you needed, you could have saved {text_footprint_memoryNeededOnly} ({footprint_realVmem / self.fParams['tree_month']:,.2f} tree-months).
         {text_filterCWD}{text_filterJobIDs}{text_filterAccount}
         Energy used: {totalEnergy:,.2f} kWh
              - CPUs: {self.df.energy_CPUs.sum():,.2f} kWh ({round(self.df.energy_CPUs.sum() / totalEnergy, 2):.0%})
              - GPUs: {self.df.energy_GPUs.sum():,.2f} kWh ({round(self.df.energy_GPUs.sum() / totalEnergy, 2):.0%})
              - Memory: {self.df.energy_memory.sum():,.2f} kWh ({round(self.df.energy_memory.sum() / totalEnergy, 2):.0%})
              - Data centre overheads: {dcOverheads:,.2f} kWh ({round(dcOverheads / totalEnergy, 2):.0%})
+        Carbon intensity used for the calculations: {self.cluster_info['CI']} gCO2e/kWh
 
         Summary of your usage: 
              - First/last job recorded on that period: {str(self.df.SubmitDatetimeX.min().date())}/{str(self.df.SubmitDatetimeX.max().date())}
              - Number of jobs: {len(self.df):,} ({len(self.df.loc[self.df.StateX == 1]):,} completed)
-             - Core hours used/charged:
-                - CPU: {self.df.CoreHoursChargedCPUX.sum():,.2f}
-                - GPU: {self.df.CoreHoursChargedGPUX.sum():,.2f}
-                - Total: {self.df.CoreHoursChargedCPUX.sum()+self.df.CoreHoursChargedGPUX.sum():,.2f}
-             - Total CPU usage time: {str(self.df.TotalCPUtimeX.sum())}
-             - Total GPU usage time: {str(totalGPUusageTime)}
+             - Core hours used/charged: {CPU_ch:,.1f} (CPU), {GPU_ch:,.1f} (GPU), {CPU_ch+GPU_ch:,.1f} (total).
+             - Total usage time (i.e. when cores were performing computations):
+                - CPU: {str(self.df.TotalCPUtime2useX.sum())}
+                - GPU: {str(self.df.TotalGPUtime2useX.sum())}
              - Total wallclock time: {str(self.df.WallclockTimeX.sum())}
              - Total memory requested: {self.df.ReqMemX.sum():,.0f} GB
-
+        
+        Limitations to keep in mind:
+             - The workload manager doesn't alway log the exact CPU usage time, and when this information is missing, we assume that all cores are used at 100%.
+             - For now, we assume that GPU jobs only use 1 GPU and the GPU is used at 100% (as the information needed for more accurate measurement is not available)
+             (both of these may lead to slightly overestimated carbon footprints, although the order of magnitude is likely to be correct)
+             - Conversely, the wasted energy due to memory overallocation may be largely underestimated, as the information needed is not always logged.
 
         Any bugs, questions, suggestions? Email LL582@medschl.cam.ac.uk
         {'-' * 80}

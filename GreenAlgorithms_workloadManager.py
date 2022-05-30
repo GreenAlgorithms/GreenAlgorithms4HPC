@@ -51,27 +51,37 @@ class Helpers_WM():
 
         return memory
 
-    def clean_RSS(self, x, cluster_info):
+    def clean_RSS(self, x):
         '''
         Clean the RSS value in sacct output.
         :param x: [NaN or str] the RSS value, either NaN or of the form '2745K'
         (optionally, just a number, we then use default_unit_RSS from cluster_info.yaml as unit).
         :return: [float] RSS value, in GB.
         '''
-        if pd.isnull(x)|(x=='0'):
+        if pd.isnull(x.MaxRSS):
+            # NB if no info on MaxRSS, we assume all memory was used
+            memory = -1
+        elif x.MaxRSS=='0':
             memory = 0
         else:
-            assert type(x) == str
+            assert type(x.MaxRSS) == str
             # Special case for the situation where MaxRSS is of the form '154264' without a unit.
-            if x[-1].isalpha():
-                memory = self.convert_to_GB(float(x[:-1]),x[-1])
+            if x.MaxRSS[-1].isalpha():
+                memory = self.convert_to_GB(float(x.MaxRSS[:-1]),x.MaxRSS[-1])
             else:
-                assert 'default_unit_RSS' in cluster_info, "Some values of MaxRSS don't have a unit. Please specify a default_unit_RSS in cluster_info.yaml"
-                memory = self.convert_to_GB(float(x), cluster_info['default_unit_RSS'])
+                assert 'default_unit_RSS' in self.cluster_info, "Some values of MaxRSS don't have a unit. Please specify a default_unit_RSS in cluster_info.yaml"
+                memory = self.convert_to_GB(float(x.MaxRSS), self.cluster_info['default_unit_RSS'])
 
         return memory
 
-    def clean_partition(self, x, cluster_info):
+    def cleam_UsedMem(self, x):
+        if x.UsedMem_ == -1:
+            # NB when MaxRSS didn't store any values, we assume that "memory used = memory requested"
+            return x.ReqMemX
+        else:
+            return x.UsedMem_
+
+    def clean_partition(self, x):
         '''
         Clean the partition field, by replacing NaNs with empty string
         and selecting just one partition per job.
@@ -83,11 +93,14 @@ class Helpers_WM():
             return ''
         else:
             L_partitions = x.split(',')
-            L_TDP = [cluster_info['partitions'][p]['TDP'] for p in L_partitions]
+            L_TDP = [self.cluster_info['partitions'][p]['TDP'] for p in L_partitions]
             assert len(set(L_TDP)) == 1, f'Different cores for the different partitions specified for a same job: {x}'
-            assert all([p in cluster_info['partitions'] for p in L_partitions]), f"Unrecognised partition: {x}"
-            # TODO: perhaps use the average in this case?
+            assert all([p in self.cluster_info['partitions'] for p in L_partitions]), f"Unrecognised partition: {x}"
             return L_partitions[0]
+
+    def set_partitionType(self, x):
+        assert  x in self.cluster_info['partitions'], f"\n-!- Unknown partition: {x} -!-\n"
+        return self.cluster_info['partitions'][x]['type']
 
     def parse_timedelta(self, x):
         '''
@@ -140,23 +153,31 @@ class Helpers_WM():
         :param  granularity_memory_request: [float or int] level of granularity available when requesting memory on this cluster
         :return: [float] minimum memory needed, in GB.
         '''
-        return min(x.ReqMemX,(int(x.UsedMemX/granularity_memory_request)+1)*granularity_memory_request)
+        return min(x.ReqMemX,(int(x.UsedMem2_/granularity_memory_request)+1)*granularity_memory_request)
 
-    def calc_coreHoursCharged(self, x, outType, cluster_info):
+    def calc_CPUusage2use(self, x):
+        if x.TotalCPUtime_.total_seconds() == 0: # This is when the workload manager actually didn't store real usage
+            # NB: when TotalCPU=0, we assume usage factor = 100% for all CPU cores
+            return x.CPUwallclocktime_
+        else:
+            assert x.TotalCPUtime_ <= x.CPUwallclocktime_
+            return x.TotalCPUtime_
 
-        out = dict()
-        out['CPU'] = x['WallclockTimeX'] * x['NCPUSX'] / np.timedelta64(1, 'h')  # NB assuming just one node
-        out['GPU'] = x['WallclockTimeX'] / np.timedelta64(1, 'h')  # NB assuming only one GPU
+    def calc_GPUusage2use(self, x):
+        if x.PartitionTypeX == 'GPU':
+            return x.WallclockTimeX # NB assuming only one GPU and usage factor of 100%
+        else:
+            return datetime.timedelta(0)
 
-        try:
-            type_part = cluster_info['partitions'][x['PartitionX']]['type']
-            if type_part == outType:
-                return out[outType]
-            else:
-                return 0
-        except:
-            print(f"\n-!- Unknown partition: {x['PartitionX']} -!-\n")
-            return x['WallclockTimeX'] / np.timedelta64(1, 'h')
+    def calc_coreHoursCharged(self, x,
+                              # outType
+                              ):
+
+        if x.PartitionTypeX == 'CPU':
+            return x.CPUwallclocktime_ / np.timedelta64(1, 'h')
+        else:
+            return x.WallclockTimeX / np.timedelta64(1, 'h')  # NB assuming only one GPU
+
 
     def clean_State(self, x):
         '''
@@ -197,6 +218,7 @@ class WorkloadManager(Helpers_WM):
     def pull_logs(self):
         '''
         Run the command line to pull usage from the workload manager.
+        More: https://slurm.schedmd.com/sacct.html
         '''
         bash_com = [
             "sacct",
@@ -205,7 +227,7 @@ class WorkloadManager(Helpers_WM):
             "--endtime",
             self.args.endDay,  # format YYYY-MM-DD
             "--format",
-            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,ReqMem,MaxRSS,WorkDir,State,Account",
+            "JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,CPUTime,ReqMem,MaxRSS,WorkDir,State,Account",
             "-P"
         ]
 
@@ -241,44 +263,51 @@ class WorkloadManager(Helpers_WM):
     def clean_logs_df(self):
         '''
         Clean the different fields of the usage logs.
-        NB: the name of the columns here (ending with X) need to be conserved, as they are used by the main script.
+        NB: the name of the columns ending with X need to be conserved, as they are used by the main script.
         '''
-        self.logs_df_raw = self.logs_df.copy() # DEBUGONLY Save a copy of uncleaned raw for debugging mainly
+        # self.logs_df_raw = self.logs_df.copy() # DEBUGONLY Save a copy of uncleaned raw for debugging mainly
 
         ### Calculate real memory usage
         self.logs_df['ReqMemX'] = self.logs_df.apply(self.calc_ReqMem, axis=1)
 
         ### Clean MaxRSS
-        self.logs_df['UsedMemX'] = self.logs_df.MaxRSS.apply(self.clean_RSS, cluster_info=self.cluster_info)
+        self.logs_df['UsedMem_'] = self.logs_df.apply(self.clean_RSS, axis=1)
 
         ### Parse wallclock time
         self.logs_df['WallclockTimeX'] = self.logs_df['Elapsed'].apply(self.parse_timedelta)
 
         ### Parse total CPU time
-        self.logs_df['TotalCPUtimeX'] = self.logs_df['TotalCPU'].apply(self.parse_timedelta)
+        # This is the total CPU used time, accross all cores.
+        # But it is not reliably logged
+        self.logs_df['TotalCPUtime_'] = self.logs_df['TotalCPU'].apply(self.parse_timedelta)
+
+        ### Parse core-wallclock time
+        # This is the maximum time cores could use, if used at 100% (Elapsed time * CPU count)
+        if 'CPUTime' in self.logs_df.columns:
+            self.logs_df['CPUwallclocktime_'] = self.logs_df['CPUTime'].apply(self.parse_timedelta)
+        else:
+            print('Using old logs, "CPUTime" information not available.') # TODO: remove this after a while
+            self.logs_df['CPUwallclocktime_'] = self.logs_df.WallclockTimeX * self.logs_df.NCPUS
 
         ### Clean partition
         # Make sure it's either a partition name, or a comma-separated list of partitions
-        self.logs_df['PartitionX'] = self.logs_df.Partition.apply(
-            self.clean_partition,
-            cluster_info=self.cluster_info
-        )
+        self.logs_df['PartitionX'] = self.logs_df.Partition.apply(self.clean_partition)
 
         ### Parse submit datetime
         self.logs_df['SubmitDatetimeX'] = self.logs_df.Submit.apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S"))
 
         ### Number of CPUs
         # e.g. here there is no cleaning necessary, so I just standardise the column name
-        self.logs_df['NCPUSX'] = self.logs_df.NCPUS
+        self.logs_df['NCPUS_'] = self.logs_df.NCPUS
 
         ### Number of nodes
-        self.logs_df['NNodesX'] = self.logs_df.NNodes
+        self.logs_df['NNodes_'] = self.logs_df.NNodes
 
         ### Job name
-        self.logs_df['JobNameX'] = self.logs_df.JobName
+        self.logs_df['JobName_'] = self.logs_df.JobName
 
         ### Working directory
-        self.logs_df['WorkingDirX'] = self.logs_df.WorkDir
+        self.logs_df['WorkingDir_'] = self.logs_df.WorkDir
 
         ### State
         self.logs_df['StateX'] = self.logs_df.State.apply(self.clean_State)
@@ -288,38 +317,43 @@ class WorkloadManager(Helpers_WM):
 
         ### Account
         if 'Account' in self.logs_df.columns:
-            self.logs_df['AccountX'] = self.logs_df.Account
+            self.logs_df['Account_'] = self.logs_df.Account
         else:
-            print('Using old logs, "Account" information not available.')
-            self.logs_df['AccountX'] = ''
+            print('Using old logs, "Account" information not available.') # TODO: remove this after a while
+            self.logs_df['Account_'] = ''
 
         ### Aggregate per jobID
         self.df_agg_0 = self.logs_df.groupby('single_jobID').agg({
-            'TotalCPUtimeX': 'max',
+            'TotalCPUtime_': 'max',
+            'CPUwallclocktime_': 'max',
             'WallclockTimeX': 'max',
             'ReqMemX': 'max',
-            'UsedMemX': 'max',
-            'NCPUSX': 'max',
-            'NNodesX': 'max',
+            'UsedMem_': 'max',
+            'NCPUS_': 'max',
+            'NNodes_': 'max',
             'PartitionX': lambda x: ''.join(x),
-            'JobNameX': 'first',
+            'JobName_': 'first',
             'SubmitDatetimeX': 'min',
-            'WorkingDirX': 'first',
+            'WorkingDir_': 'first',
             'StateX': 'min',
-            'AccountX': 'first'
+            'Account_': 'first'
         })
 
         ### Remove jobs that are still running or currently queued
         self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -1]
 
+        ### Replace UsedMem_=-1 with memory requested (for when MaxRSS=NaN)
+        self.df_agg['UsedMem2_'] = self.df_agg.apply(self.cleam_UsedMem, axis=1)
+
+        ### Label as CPU or GPU partition
+        self.df_agg['PartitionTypeX'] = self.df_agg.PartitionX.apply(self.set_partitionType)
+
+        ### add the usage time to use for calculations
+        self.df_agg['TotalCPUtime2useX'] = self.df_agg.apply(self.calc_CPUusage2use, axis=1)
+        self.df_agg['TotalGPUtime2useX'] = self.df_agg.apply(self.calc_GPUusage2use, axis=1)
+
         ### Calculate core-hours charged
-        for x in ['CPU','GPU']:
-            self.df_agg[f'CoreHoursCharged{x}X'] = self.df_agg.apply(
-                self.calc_coreHoursCharged,
-                outType=x,
-                cluster_info=self.cluster_info,
-                axis=1)
-        assert not ((self.df_agg.CoreHoursChargedCPUX != 0) & (self.df_agg.CoreHoursChargedGPUX != 0)).any()
+        self.df_agg['CoreHoursChargedX'] = self.df_agg.apply(self.calc_coreHoursCharged, axis=1)
 
         ### Calculate real memory need
         self.df_agg['NeededMemX'] = self.df_agg.apply(
@@ -328,12 +362,14 @@ class WorkloadManager(Helpers_WM):
             axis=1)
 
         ### Add memory waste information
-        # TODO can be overestimated
-        self.df_agg['memOverallocationFactorX'] = (self.df_agg.ReqMemX - self.df_agg.NeededMemX) / self.df_agg.NeededMemX
+        self.df_agg['memOverallocationFactorX'] = (self.df_agg.ReqMemX) / self.df_agg.NeededMemX
+
+        # foo = self.df_agg[['TotalCPUtime_', 'CPUwallclocktime_', 'WallclockTimeX', 'NCPUS_', 'CoreHoursChargedCPUX',
+        #                    'CoreHoursChargedGPUX', 'TotalCPUtime2useX', 'TotalGPUtime2useX']] # DEBUGONLY
 
         ### Filter on working directory
         if self.args.filterWD is not None:
-            self.df_agg = self.df_agg.loc[self.df_agg.WorkingDirX == self.args.filterWD]
+            self.df_agg = self.df_agg.loc[self.df_agg.WorkingDir_ == self.args.filterWD]
 
         ### Filter on Job ID
         self.df_agg.reset_index(inplace=True)
@@ -345,4 +381,4 @@ class WorkloadManager(Helpers_WM):
 
         ### Filter on Account
         if self.args.filterAccount is not None:
-            self.df_agg = self.df_agg.loc[self.df_agg.AccountX == self.args.filterAccount]
+            self.df_agg = self.df_agg.loc[self.df_agg.Account_ == self.args.filterAccount]

@@ -10,18 +10,20 @@ The aim of this code is to implement the Green Algorithms framework (more [here]
 
 Now, anyone with access to `the_shared_directory` can run the calculator, 
 by running the same command, with various options available:
-```
-usage: myCarbonFootprint.sh [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
-                            [--filterJobIDs FILTERJOBIDS] [--reportBug] 
-                            [--reportBugHere]
 
-Calculate your carbon footprint on YOUR_CLUSTER.
+```
+usage: GreenAlgorithms_global.py [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
+                                 [--filterJobIDs FILTERJOBIDS]
+                                 [--filterAccount FILTERACCOUNT] [--reportBug]
+                                 [--reportBugHere]
+
+Calculate your carbon footprint on CSD3.
 
 optional arguments:
   -h, --help            show this help message and exit
   -S STARTDAY, --startDay STARTDAY
                         The first day to take into account, as YYYY-MM-DD
-                        (default: 2021-01-01)
+                        (default: 2022-01-01)
   -E ENDDAY, --endDay ENDDAY
                         The last day to take into account, as YYYY-MM-DD
                         (default: today)
@@ -29,7 +31,9 @@ optional arguments:
                         location.
   --filterJobIDs FILTERJOBIDS
                         Comma seperated list of Job IDs you want to filter on.
-  --reportBug           In case of a bug, this flag logs jobs informations next to `myCarbonFootprint.sh` so
+  --filterAccount FILTERACCOUNT
+                        Only consider jobs charged under this account
+  --reportBug           In case of a bug, this flag logs jobs informations so
                         that we can fix it. Note that this will write out some
                         basic information about your jobs, such as runtime,
                         number of cores and memory usage.
@@ -37,11 +41,16 @@ optional arguments:
                         home folder
 ```
 
+### Limitations to keep in mind
+
+ - The workload manager doesn't alway log the exact CPU usage time, and when this information is missing, we assume that all cores are used at 100%.
+ - For now, we assume that GPU jobs only use 1 GPU and the GPU is used at 100% (as the information needed for more accurate measurement is not available)
+ (both of these may lead to slightly overestimated carbon footprints, although the order of magnitude is likely to be correct)
+ - Conversely, the wasted energy due to memory overallocation may be largely underestimated, as the information needed is not always logged.
+
 
 ### Requirements
-- Python 3.7 
-
-*(can probably be adjusted to older versions of python fairly easily)*
+- Python 3.7 *(can probably be adjusted to older versions of python fairly easily)*
 
 ## How to install it
 
