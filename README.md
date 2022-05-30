@@ -80,5 +80,13 @@ and will create the virtualenv with the required packages, based on `requirement
 the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 ```
 
-## How to update the code without overwriting local changes:
-_TBC_
+## How to update the code:
+_More elegant solutions welcome! [Discussion here](https://github.com/Llannelongue/GreenAlgorithms4HPC/issues/1)._
+
+⚠️ Make sure you have saved your custom version of `cluster_info.yaml` and the module loading step of `GreenAlgorithms_global.py`.
+
+- `git reset --hard` To remove local changes to files (hence the need for a backup!)
+- `git pull`
+- Update `cluster_info.yaml` and `GreenAlgorithms_global.py` with the details needed for your cluster.
+- `chmod +x myCarbonFootprint.sh` to make it executable again
+- Test `myCarbonFootprint.sh` 
