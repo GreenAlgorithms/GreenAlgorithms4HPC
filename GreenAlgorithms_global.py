@@ -63,8 +63,6 @@ class validity_checks():
             ''')
             sys.exit()
 
-    # TODO: check values in cluster_info.yaml
-
 
 class Helpers_GA():
 
@@ -406,7 +404,7 @@ if __name__ == "__main__":
 
     # For debuging, load custom cluster info
     if args.useOtherClusterInfo != '':
-        print(f"Overrriding cluster_info with: {args.useOtherClusterInfo}")
+        print(f"Overriding cluster_info with: {args.useOtherClusterInfo}")
         with open(os.path.join('clustersData', args.useOtherClusterInfo), "r") as stream:
             try:
                 cluster_info = yaml.safe_load(stream)
@@ -416,6 +414,7 @@ if __name__ == "__main__":
     ### Set the WD to filter on, if needed
     if args.filterCWD:
         args.filterWD = args.userCWD
+        print("\nNB: --filterCWD doesn't work with symbolic links (yet!)\n")
     else:
         args.filterWD = None
 

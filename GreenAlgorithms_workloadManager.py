@@ -89,16 +89,15 @@ class Helpers_WM():
         :param cluster_info: [dict]
         :return: [str] one partition or empty string
         '''
-        if pd.isnull(x):
+        if pd.isnull(x.Partition):
             return ''
         else:
-            L_partitions = x.split(',')
-            L_TDP = [self.cluster_info['partitions'][p]['TDP'] for p in L_partitions]
-            # FIXME commenting out while fixing it
-            if len(set(L_TDP)) > 1:
-                print(f'Different cores for the different partitions specified for a same job: {x}')
-            # assert len(set(L_TDP)) == 1, f'Different cores for the different partitions specified for a same job: {x}'
-            # assert all([p in self.cluster_info['partitions'] for p in L_partitions]), f"Unrecognised partition: {x}"
+            L_partitions = x.Partition.split(',')
+            if x.WallclockTimeX.total_seconds() > 0:
+                # Multiple partitions logged is only an issue for jobs that never started,
+                # for the others, only the used partition is logged
+                if len(L_partitions) > 1:
+                    print(f"\n-!- WARNING: Multiple partitions logged on a job than ran: {x.JobID} - {x.Partition} (using the first one)\n")
             return L_partitions[0]
 
     def set_partitionType(self, x):
@@ -303,7 +302,7 @@ class WorkloadManager(Helpers_WM):
 
         ### Clean partition
         # Make sure it's either a partition name, or a comma-separated list of partitions
-        self.logs_df['PartitionX'] = self.logs_df.Partition.apply(self.clean_partition)
+        self.logs_df['PartitionX'] = self.logs_df.apply(self.clean_partition, axis=1)
 
         ### Parse submit datetime
         self.logs_df['SubmitDatetimeX'] = self.logs_df.Submit.apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S"))
@@ -392,8 +391,9 @@ class WorkloadManager(Helpers_WM):
         ### Filter on working directory
         if self.args.filterWD is not None:
             foo = len(self.df_agg)
+            # TODO: Doesn't not work with symbolic links
             self.df_agg = self.df_agg.loc[self.df_agg.WorkingDir_ == self.args.filterWD]
-            print(f'Filtered out {foo-len(self.df_agg):,} rows (filterCWD={self.args.filterWD})')
+            # print(f'Filtered out {foo-len(self.df_agg):,} rows (filterCWD={self.args.filterWD})') # DEBUGONLY
 
         ### Filter on Job ID
         self.df_agg.reset_index(inplace=True)
