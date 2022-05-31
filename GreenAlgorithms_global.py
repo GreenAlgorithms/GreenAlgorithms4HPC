@@ -332,7 +332,7 @@ def main(args, cluster_info, fParams):
         os.makedirs(os.path.dirname(log_path), exist_ok=True) # Create error_logs dir if needed
         with open(log_path, 'wb') as f:
             f.write(WM.logs_raw)
-        print(f"SLURM statistics logged for debuging: {log_path}")
+        print(f"\nSLURM statistics logged for debuging: {log_path}\n")
 
     ### Turn usage logs into DataFrame
     WM.convert2dataframe()

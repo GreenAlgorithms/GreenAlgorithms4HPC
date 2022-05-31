@@ -94,8 +94,11 @@ class Helpers_WM():
         else:
             L_partitions = x.split(',')
             L_TDP = [self.cluster_info['partitions'][p]['TDP'] for p in L_partitions]
-            assert len(set(L_TDP)) == 1, f'Different cores for the different partitions specified for a same job: {x}'
-            assert all([p in self.cluster_info['partitions'] for p in L_partitions]), f"Unrecognised partition: {x}"
+            # FIXME commenting out while fixing it
+            if len(set(L_TDP)) > 1:
+                print(f'Different cores for the different partitions specified for a same job: {x}')
+            # assert len(set(L_TDP)) == 1, f'Different cores for the different partitions specified for a same job: {x}'
+            # assert all([p in self.cluster_info['partitions'] for p in L_partitions]), f"Unrecognised partition: {x}"
             return L_partitions[0]
 
     def set_partitionType(self, x):
@@ -388,7 +391,9 @@ class WorkloadManager(Helpers_WM):
 
         ### Filter on working directory
         if self.args.filterWD is not None:
+            foo = len(self.df_agg)
             self.df_agg = self.df_agg.loc[self.df_agg.WorkingDir_ == self.args.filterWD]
+            print(f'Filtered out {foo-len(self.df_agg):,} rows (filterCWD={self.args.filterWD})')
 
         ### Filter on Job ID
         self.df_agg.reset_index(inplace=True)
