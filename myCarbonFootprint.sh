@@ -5,6 +5,9 @@
 ## You only need to edit the module loading line (l.13), make sure you are loading python 3.7 or greater.
 ##
 
+# store the cwd in case we need to filter on it
+userCWD="$(pwd)"
+
 # Cd into the directory where the GA files are located
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
@@ -39,4 +42,5 @@ else
 fi
 
 # Run the python code and pass on the arguments
-python3 GreenAlgorithms_global.py "$@"
+#userCWD="/home/ll582/ with space" # DEBUGONLY
+python3 GreenAlgorithms_global.py "$@" --userCWD "$userCWD"

@@ -165,7 +165,8 @@ class Helpers_WM():
 
     def calc_GPUusage2use(self, x):
         if x.PartitionTypeX == 'GPU':
-            assert x.NGPUS_ != 0
+            if x.WallclockTimeX.total_seconds() > 0:
+                assert x.NGPUS_ != 0
             return x.WallclockTimeX * x.NGPUS_ # NB assuming usage factor of 100% for GPUs
         else:
             return datetime.timedelta(0)
@@ -363,7 +364,8 @@ class WorkloadManager(Helpers_WM):
 
         # Sanity check (no GPU logged for CPU partitions and vice versa)
         assert (self.df_agg.loc[self.df_agg.PartitionTypeX == 'CPU'].NGPUS_ == 0).all()
-        assert (self.df_agg.loc[self.df_agg.PartitionTypeX == 'GPU'].NGPUS_ > 0).all()
+        foo = self.df_agg.loc[(self.df_agg.PartitionTypeX == 'GPU') & (self.df_agg.NGPUS_ == 0)]
+        assert (foo.WallclockTimeX.dt.total_seconds() == 0).all() # Cancelled GPU jobs won't have any GPUs allocated if they didn't start
 
         ### add the usage time to use for calculations
         self.df_agg['TotalCPUtime2useX'] = self.df_agg.apply(self.calc_CPUusage2use, axis=1)

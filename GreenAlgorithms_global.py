@@ -48,7 +48,7 @@ class validity_checks():
         '''
         if len(df) == 0:
             if filterWD is not None:
-                addThat = ' from this directory'
+                addThat = f' from this directory ({filterWD})'
             else:
                 addThat = ''
             if filterJobIDs != 'all':
@@ -242,14 +242,6 @@ class GreenAlgorithms(Helpers_GA):
         else:
             text_filterAccount = f"\n        (NB: The only jobs considered here are those charged under {self.args.filterAccount})\n"
 
-        ### Find list of partitions corresponding to GPUs
-        # list_GPUs_partitions = [x for x in cluster_info['partitions'] if cluster_info['partitions'][x]['type']=='GPU'] # TODO remove
-
-        ### If there is no GPU time # TODO remove
-        # totalGPUusageTime = self.df.loc[self.df.PartitionX.isin(list_GPUs_partitions)].WallclockTimeX.sum()
-        # if pd.isnull(totalGPUusageTime):
-        #     totalGPUusageTime = 0
-
         ### Calculate core-hours charged
         CPU_ch = self.df.loc[self.df.PartitionTypeX == 'CPU'].CoreHoursChargedX.sum()
         GPU_ch = self.df.loc[self.df.PartitionTypeX == 'GPU'].CoreHoursChargedX.sum()
@@ -335,7 +327,7 @@ def main(args, cluster_info, fParams):
             # Logging into a seperate dir to write-protect the main one (not in place for now)
             # log_path = os.path.join(pathlib.Path(scripts_dir).parent.absolute(), 'GreenAlgorithms4HPC_errorLogs', f'sacctOutput_{log_name}.csv')
         elif args.reportBugHere:
-            log_path = f'{os.getcwd()}/sacctOutput_{log_name}.csv'
+            log_path = f'{args.userCWD}/sacctOutput_{log_name}.csv'
 
         os.makedirs(os.path.dirname(log_path), exist_ok=True) # Create error_logs dir if needed
         with open(log_path, 'wb') as f:
@@ -395,6 +387,7 @@ if __name__ == "__main__":
                         default=default_endDay)
     parser.add_argument('--filterCWD', action='store_true',
                         help='Only report on jobs launched from the current location.')
+    parser.add_argument('--userCWD', type=str, help=argparse.SUPPRESS)
     parser.add_argument('--filterJobIDs', type=str,
                         help='Comma seperated list of Job IDs you want to filter on.',
                         default='all')
@@ -422,7 +415,7 @@ if __name__ == "__main__":
 
     ### Set the WD to filter on, if needed
     if args.filterCWD:
-        args.filterWD = os.getcwd()
+        args.filterWD = args.userCWD
     else:
         args.filterWD = None
 
