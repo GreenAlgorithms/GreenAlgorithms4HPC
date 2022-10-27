@@ -235,23 +235,24 @@ class WorkloadManager(Helpers_WM):
             "-P"
         ]
 
-        if self.args.useLoggedOutput == '':
+        if self.args.useCustomLogs == '':
             logs = subprocess.run(bash_com, capture_output=True)
             self.logs_raw = logs.stdout
         else:
-            foo = "Overrriding logs_raw with: "
-            try:
-                with open(os.path.join('testData', self.args.useLoggedOutput), 'rb') as f:
-                    self.logs_raw = f.read()
-                foo += f"testData/{self.args.useLoggedOutput}"
-            except:
-                try:
-                    with open(os.path.join('error_logs', self.args.useLoggedOutput), 'rb') as f:
-                        self.logs_raw = f.read()
-                    foo += f"error_logs/{self.args.useLoggedOutput}"
-                except ValueError as err:
-                    print(err.args)
-                    raise
+            foo = "Overriding logs_raw with: "
+            foundIt = False
+            for sacctFileLocation in ['','testData','error_logs']:
+                if not foundIt:
+                    try:
+                        with open(os.path.join(sacctFileLocation, self.args.useCustomLogs), 'rb') as f:
+                            self.logs_raw = f.read()
+                        foo += f"{sacctFileLocation}/{self.args.useCustomLogs}"
+                        foundIt = True
+                    except:
+                        pass
+            if not foundIt:
+                raise FileNotFoundError(f"Couldn't find {self.args.useCustomLogs} \n "
+                                        f"It should be either be in the testData/ or error_logs/ subdirectories, or the full path should be provided by --useCustomLogs.")
             print(foo)
 
     def convert2dataframe(self):

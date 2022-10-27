@@ -334,6 +334,9 @@ def main(args, cluster_info, fParams):
 
     ### Turn usage logs into DataFrame
     WM.convert2dataframe()
+    # Save an example of the WM output
+    # WM.df_agg.iloc[1:3, :].to_csv('example_files/example_output_workloadManager.csv', sep='|')
+
     # Check if there are any jobs during the period
     validator.check_empty_results(WM.logs_df)
 
@@ -395,8 +398,11 @@ if __name__ == "__main__":
         Note that this will write out some basic information about your jobs, such as runtime, number of cores and memory usage.')
     parser.add_argument('--reportBugHere', action='store_true',
                         help='Similar to --reportBug, but exports the output to your home folder')
+    parser.add_argument('--useCustomLogs', type=str, default='',
+                        help='This bypasses the workload manager, and enables you to input a custom log file of your jobs. \
+                             This is mostly meant for debugging, but can be useful in some situations. '
+                             'An example of the expected file can be found at `example_files/example_sacctOutput_raw.csv`.')
     # Arguments for debugging
-    parser.add_argument('--useLoggedOutput', type=str, default='', help=argparse.SUPPRESS)
     parser.add_argument('--useOtherClusterInfo', type=str, default='', help=argparse.SUPPRESS)
     parser.add_argument('--runTests', type=str, default='', help=argparse.SUPPRESS)
 
