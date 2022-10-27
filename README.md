@@ -71,14 +71,23 @@ optional arguments:
 
 4. Edit `GreenAlgorithms_workloadManager.py` to tailor it to your workload manager. 
 For now, the default code is based on SLURM.
+**You just need to make sure that you create a variable `self.df_agg` similar to the example file [here](example_files/example_output_workloadManager.csv).
+Only the columns with a name ending in X are needed.**
 
-5. Edit `cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster. You can find a lot of useful values on the Green Algorithms GitHub: https://github.com/GreenAlgorithms/green-algorithms-tool/tree/master/data
+6. Edit `cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster. You can find a lot of useful values on the Green Algorithms GitHub: https://github.com/GreenAlgorithms/green-algorithms-tool/tree/master/data
 
-6. Run the script a first time. It will check that the correct version of python is used 
+7. Run the script a first time. It will check that the correct version of python is used 
 and will create the virtualenv with the required packages, based on `requirements.txt`:
 ```shell script
 the_shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
 ```
+
+## Debugging
+There are some example of intermediary files in [example_files/](example_files/).
+
+For the workload manager part of the code:
+- [The raw output](example_files/example_sacctOutput_raw.csv) from the `sacct` SLURM command (this is the command pulling all the logs from SLURM), i.e. `WM.logs_raw`, the output of `WM.pull_logs()`.
+- [The cleaned output of the workload manager step](example_files/example_output_workloadManager.csv), i.e. `WM.df_agg`, the output of `WM.clean_logs_df()`. Only the columns with a name ending with X are needed (the other ones are being used by the workload manager script). NB: the `pd.DataFrame` has been converted to a csv to be included here.
 
 ## How to update the code:
 _More elegant solutions welcome! [Discussion here](https://github.com/Llannelongue/GreenAlgorithms4HPC/issues/1)._

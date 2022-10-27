@@ -1,0 +1,3 @@
+|single_jobID|TotalCPUtime_|CPUwallclocktime_|WallclockTimeX|ReqMemX|UsedMem_|NCPUS_|NGPUS_|NNodes_|PartitionX|JobName_|SubmitDatetimeX|WorkingDir_|StateX|Account_|UsedMem2_|PartitionTypeX|TotalCPUtime2useX|TotalGPUtime2useX|CoreHoursChargedX|NeededMemX|memOverallocationFactorX|parentJobID
+1|106803|0 days 00:00:00|0 days 00:00:04|0 days 00:00:04|12.04|-1|1|0|1|partition1|anyName1|2019-04-11 18:04:11||0|account1|12.04|CPU|0 days 00:00:04|0 days 00:00:00|0.0011111111111111111|12.04|1.0|10680403
+2|106906|0 days 00:00:00|0 days 00:02:29|0 days 00:02:29|12.04|-1|1|0|1|partition2|anyName2|2019-04-12 09:52:58||0|account2|12.04|CPU|0 days 00:02:29|0 days 00:00:00|0.04138888888888889|12.04|1.0|10686906
