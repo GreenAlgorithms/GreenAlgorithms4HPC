@@ -294,7 +294,7 @@ class GreenAlgorithms(Helpers_GA):
              (both of these may lead to slightly overestimated carbon footprints, although the order of magnitude is likely to be correct)
              - Conversely, the wasted energy due to memory overallocation may be largely underestimated, as the information needed is not always logged.
 
-        Any bugs, questions, suggestions? Email LL582@medschl.cam.ac.uk
+        Any bugs, questions, suggestions? Post on GitHub (Llannelongue/GreenAlgorithms4HPC) or email LL582@medschl.cam.ac.uk
         {'-' * 80}
         Calculated using the Green Algorithms framework: www.green-algorithms.org
         Please cite https://onlinelibrary.wiley.com/doi/10.1002/advs.202100707 
