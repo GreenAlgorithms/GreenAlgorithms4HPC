@@ -1,2 +1,0 @@
-JobID\tJobName\tSubmit\tElapsed\tPartition\tNNodes\tNCPUS\tTotalCPU\tCPUTime\tReqMem\tMaxRSS\tWorkDir\tState\tAccount\tAllocTRES
-12345678\tAnyNames\t2022-02-11T19:11:21\t04:00:25\tpartition1\t1\t1\t00:00:00\t04:00:25\t6760Mc\t\tany/dir/path\tTIMEOUT\tcluster_account\tbilling=1,cpu=1,mem=6760M,node=1

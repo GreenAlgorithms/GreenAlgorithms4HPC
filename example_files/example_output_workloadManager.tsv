@@ -1,0 +1,3 @@
+	single_jobID	TotalCPUtime_	CPUwallclocktime_	WallclockTimeX	ReqMemX	UsedMem_	NCPUS_	NGPUS_	NNodes_	PartitionX	JobName_	SubmitDatetimeX	WorkingDir_	StateX	Account_	UsedMem2_	PartitionTypeX	TotalCPUtime2useX	TotalGPUtime2useX	CoreHoursChargedX	NeededMemX	memOverallocationFactorX	parentJobID
+1	27879	0 days 00:00:00.508000	0 days 03:15:45	0 days 00:13:03	102.6	0.003016	15	0	1	myPartition	myName	2022-09-14 18:21:21	/job/path	0	myAccount	0.003016	CPU	0 days 00:00:00.508000	0 days 00:00:00	3.2625	6.0	17.099999999999998	2787379
+2	27060	0 days 00:00:12.499000	0 days 11:12:30	0 days 00:44:50	102.6	0.347312	15	0	1	myPartition	myName	2022-09-14 18:38:58	/job/path	0	myAccount	0.347312	CPU	0 days 00:00:12.499000	0 days 00:00:00	11.208333333333334	6.0	17.099999999999998	2788060

@@ -335,13 +335,16 @@ def main(args, cluster_info, fParams):
     ### Turn usage logs into DataFrame
     WM.convert2dataframe()
     # Save an example of the WM output
-    # WM.df_agg.iloc[1:3, :].to_csv('example_files/example_output_workloadManager.csv', sep='|')
+    # WM.logs_df.iloc[1:3, :].to_csv('example_files/example_sacctOutput_raw_asDF.tsv', sep='\t', index=False)
 
     # Check if there are any jobs during the period
     validator.check_empty_results(WM.logs_df)
 
     ### Clean the usage logs
     WM.clean_logs_df()
+    # Save an example of the WM output
+    # WM.df_agg.iloc[1:3, :].to_csv('example_files/example_output_workloadManager.tsv', sep='\t')
+
     # Check if there are any jobs during the period from this directory and with these jobIDs
     validator.check_empty_results(WM.df_agg, filterWD=args.filterWD, filterJobIDs=args.filterJobIDs, filterAccount=args.filterAccount)
 
@@ -401,7 +404,7 @@ if __name__ == "__main__":
     parser.add_argument('--useCustomLogs', type=str, default='',
                         help='This bypasses the workload manager, and enables you to input a custom log file of your jobs. \
                              This is mostly meant for debugging, but can be useful in some situations. '
-                             'An example of the expected file can be found at `example_files/example_sacctOutput_raw.csv`.')
+                             'An example of the expected file can be found at `example_files/example_sacctOutput_raw.tsv`.')
     # Arguments for debugging
     parser.add_argument('--useOtherClusterInfo', type=str, default='', help=argparse.SUPPRESS)
     parser.add_argument('--runTests', type=str, default='', help=argparse.SUPPRESS)
