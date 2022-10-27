@@ -16,6 +16,7 @@ usage: GreenAlgorithms_global.py [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--filterJobIDs FILTERJOBIDS]
                                  [--filterAccount FILTERACCOUNT] [--reportBug]
                                  [--reportBugHere]
+                                 [--useCustomLogs USECUSTOMLOGS]
 
 Calculate your carbon footprint on CSD3.
 
@@ -39,6 +40,12 @@ optional arguments:
                         number of cores and memory usage.
   --reportBugHere       Similar to --reportBug, but exports the output to your
                         home folder
+  --useCustomLogs USECUSTOMLOGS
+                        This bypasses the workload manager, and enables you to
+                        input a custom log file of your jobs. This is mostly
+                        meant for debugging, but can be useful in some
+                        situations. An example of the expected file can be
+                        found at `example_files/example_sacctOutput_raw.tsv`.
 ```
 
 ### Limitations to keep in mind
