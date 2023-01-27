@@ -34,6 +34,16 @@ optional arguments:
                         Comma seperated list of Job IDs you want to filter on.
   --filterAccount FILTERACCOUNT
                         Only consider jobs charged under this account
+  --customSuccessStates CUSTOMSUCCESSSTATES
+                        Comma-separated list of job states. By default, only
+                        jobs that exit with status CD or COMPLETED are
+                        considered succesful (PENDING, RUNNING and REQUEUD are
+                        ignored). Jobs with states listed here will be
+                        considered successful as well (best to list both
+                        2-letter and full-length codes. Full list of job
+                        states:
+                        https://slurm.schedmd.com/squeue.html#SECTION_JOB-
+                        STATE-CODES
   --reportBug           In case of a bug, this flag logs jobs informations so
                         that we can fix it. Note that this will write out some
                         basic information about your jobs, such as runtime,
