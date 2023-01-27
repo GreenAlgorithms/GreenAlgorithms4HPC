@@ -393,10 +393,16 @@ if __name__ == "__main__":
                         help='Only report on jobs launched from the current location.')
     parser.add_argument('--userCWD', type=str, help=argparse.SUPPRESS)
     parser.add_argument('--filterJobIDs', type=str,
-                        help='Comma seperated list of Job IDs you want to filter on.',
+                        help='Comma separated list of Job IDs you want to filter on.',
                         default='all')
     parser.add_argument('--filterAccount', type=str,
                         help='Only consider jobs charged under this account')
+    parser.add_argument('--customSuccessStates', type=str, default='',
+                        help="Comma-separated list of job states. By default, only jobs that exit with status CD or \
+                             COMPLETED are considered succesful (PENDING, RUNNING and REQUEUD are ignored). \
+                             Jobs with states listed here will be considered successful as well (best to list both \
+                             2-letter and full-length codes. Full list of job states: \
+                             https://slurm.schedmd.com/squeue.html#SECTION_JOB-STATE-CODES")
     parser.add_argument('--reportBug', action='store_true', help='In case of a bug, this flag logs jobs informations so that we can fix it. \
         Note that this will write out some basic information about your jobs, such as runtime, number of cores and memory usage.')
     parser.add_argument('--reportBugHere', action='store_true',

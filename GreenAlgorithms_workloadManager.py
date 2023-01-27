@@ -183,18 +183,31 @@ class Helpers_WM():
             return x.WallclockTimeX * x.NGPUS_ / np.timedelta64(1, 'h')
 
 
-    def clean_State(self, x):
+    def clean_State(self, x, customSuccessStates_list):
         '''
         Standardise the job's state, coding with {-1,0,1}
         :param x: [str] "State" field from sacct output
         :return: [int] in [-1,0,1]
         '''
-        if x in ['CD','COMPLETED']:
-            return 1
-        elif x in ['PD','PENDING','R','RUNNING','RQ','REQUEUED']:
-            return -1
+        # Codes are found here: https://slurm.schedmd.com/squeue.html#SECTION_JOB-STATE-CODES
+        # self.args.customSuccessStates = 'TO,TIMEOUT'
+        success_codes = ['CD','COMPLETED']
+        running_codes = ['PD','PENDING','R','RUNNING','RQ','REQUEUED']
+        if x in success_codes:
+            codeState = 1
+        elif x in customSuccessStates_list:
+            # we allocate a lower value here so that when aggregating by jobID, the whole job keeps the flag
+            # Otherwise a "cancelled" job could take over with StateX=0 for example
+            codeState = -1
         else:
-            return 0
+            codeState = 0
+
+        if x in running_codes:
+            # running jobs are the lowest to be removed all the time
+            # (if one of the subprocess is still running, the job gets ignored regardless of --customSuccessStates
+            codeState = -2
+
+        return codeState
 
     def get_parent_jobID(self, x):
         '''
@@ -322,7 +335,8 @@ class WorkloadManager(Helpers_WM):
         self.logs_df['WorkingDir_'] = self.logs_df.WorkDir
 
         ### State
-        self.logs_df['StateX'] = self.logs_df.State.apply(self.clean_State)
+        customSuccessStates_list = self.args.customSuccessStates.split(',')
+        self.logs_df['StateX'] = self.logs_df.State.apply(self.clean_State, customSuccessStates_list=customSuccessStates_list)
 
         ### Pull jobID
         self.logs_df['single_jobID'] = self.logs_df.JobID.apply(lambda x: x.split('.')[0])
@@ -353,7 +367,10 @@ class WorkloadManager(Helpers_WM):
         })
 
         ### Remove jobs that are still running or currently queued
-        self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -1]
+        self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -2]
+
+        ### Turn StateX==-2 into 1
+        self.df_agg.loc[self.df_agg.StateX == -1, 'StateX'] = 1
 
         ### Replace UsedMem_=-1 with memory requested (for when MaxRSS=NaN)
         self.df_agg['UsedMem2_'] = self.df_agg.apply(self.cleam_UsedMem, axis=1)
