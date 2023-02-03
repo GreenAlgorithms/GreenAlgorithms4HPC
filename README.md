@@ -12,7 +12,7 @@ Now, anyone with access to `the_shared_directory` can run the calculator,
 by running the same command, with various options available:
 
 ```
-usage: GreenAlgorithms_global.py [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
+usage: myCarbonFootprint.sh      [-h] [-S STARTDAY] [-E ENDDAY] [--filterCWD]
                                  [--filterJobIDs FILTERJOBIDS]
                                  [--filterAccount FILTERACCOUNT] [--reportBug]
                                  [--reportBugHere]
