@@ -251,6 +251,11 @@ class GreenAlgorithms(Helpers_GA):
         totalEnergy = self.df.energy.sum()
         dcOverheads = totalEnergy - self.df.energy_CPUs.sum() - self.df.energy_GPUs.sum() - self.df.energy_memory.sum()
 
+        ### pd.timedelta.sum() has a limit on the number of timedeltas that can be summed up, so going around this limitation with this
+        TotalCPUtime2use_sec = self.df.TotalCPUtime2useX.dt.total_seconds()
+        TotalGPUtime2use_sec = self.df.TotalGPUtime2useX.dt.total_seconds()
+        WallclockTime_sec = self.df.WallclockTimeX.dt.total_seconds()
+
         self.report = f'''
           ############################{'#'*len(clusterName)}###
           #                           {' '*len(clusterName)}  #
@@ -283,9 +288,9 @@ class GreenAlgorithms(Helpers_GA):
              - Number of jobs: {len(self.df):,} ({len(self.df.loc[self.df.StateX == 1]):,} completed)
              - Core hours used/charged: {CPU_ch:,.1f} (CPU), {GPU_ch:,.1f} (GPU), {CPU_ch+GPU_ch:,.1f} (total).
              - Total usage time (i.e. when cores were performing computations):
-                - CPU: {str(self.df.TotalCPUtime2useX.sum())}
-                - GPU: {str(self.df.TotalGPUtime2useX.sum())}
-             - Total wallclock time: {str(self.df.WallclockTimeX.sum())}
+                - CPU: {str(datetime.timedelta(seconds=TotalCPUtime2use_sec.sum()))}
+                - GPU: {str(datetime.timedelta(seconds=TotalGPUtime2use_sec.sum()))}
+             - Total wallclock time: {str(datetime.timedelta(seconds=WallclockTime_sec.sum()))}
              - Total memory requested: {self.df.ReqMemX.sum():,.0f} GB
         
         Limitations to keep in mind:
