@@ -24,7 +24,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -S STARTDAY, --startDay STARTDAY
                         The first day to take into account, as YYYY-MM-DD
-                        (default: 2022-01-01)
+                        (default: 20XX-01-01 i.e. 01/01 of current year)
   -E ENDDAY, --endDay ENDDAY
                         The last day to take into account, as YYYY-MM-DD
                         (default: today)
