@@ -1,0 +1,91 @@
+<!--TODO create similar pages for department and group granularity -->
+
+<div id="user" class="section scrollspy">
+     <div>
+        <h3>User's personal report: {{ user.userID }}</h3>
+
+        <p>
+            Find out your carbon footprint from {{ startDay }} to {{ endDay }}.
+        </p>
+    </div>
+
+    <div id="summary_user" class="card-panel stats-summary">
+        <div class="row center-align">
+            <div class="col s3">
+                <i class="fa-solid fa-microchip"></i>
+                <span>CPU time</span>
+                <span data-stat="cpu" >{{ usersActivity[user.userID].cpuTime }}</span>
+            </div>
+            <div class="col s3">
+                <i class="fa-solid fa-smog"></i>
+                <span>Carbon footprint</span>
+                <span data-stat="co2e" >{{ usersActivity[user.userID].carbonFootprint }}</span>
+            </div>
+            <div class="col s3">
+                <i class="fa-solid fa-plane"></i>
+                <span>{{ usersActivity[user.userID].flying.trip }}</span>
+                <span data-stat="flight" >{{ usersActivity[user.userID].flying.number }}</span>
+            </div>
+            <div class="col s3">
+                <i class="fa-solid fa-tree"></i>
+                <span>Carbon sequestration</span>
+                <span data-stat="tree" >{{ usersActivity[user.userID].trees }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div>
+            {% include 'plotly_thisuserDailyCarbonFootprint.html' %}
+        </div>
+        <div>
+            {% include 'plotly_thisuserDailyNjobs.html' %}
+        </div>
+        <div>
+            {% include 'plotly_thisuserDailyCpuTime.html' %}
+        </div>
+        <div>
+            {% include 'plotly_thisuserDailyMemoryRequested.html' %}
+        </div>
+
+        <div>
+            <h5>Failed jobs</h5>
+            <p>
+                Because any resource spent on a job is wasted if the job fails, it
+                is important to test scripts and pipelines on small datasets.
+                The chart below shows the daily success rate of {{ usersActivity[user.userID].n_jobs }}
+                jobs that completed in the period.
+
+                Failed jobs represent {{ usersActivity[user.userID].carbonFootprint_failedJobs }} and
+                a cost of {{ usersActivity[user.userID].cost_failedJobs }}.
+                They are responsible for {{ usersActivity[user.userID].carbonFootprint_failedJobs_share }} of the overall
+                carbon footprint.
+            </p>
+            {% include 'plotly_thisuserSuccessRate.html' %}
+<!--                        TODO put text and pie chart side-by-side-->
+            {% include 'plotly_thisuserDailySuccessRate.html' %}
+        </div>
+
+        <div>
+            <h5>Memory efficiency</h5>
+
+            <p>
+                Memory can be a significant source of waste, because the power draw from memory mainly depends
+                on the memory available, not on the actual memory used. The chart below shows the distribution
+                of the memory efficiency collected from {{ usersActivity[user.userID].n_jobs }} jobs
+                between {{ startDay }} and {{ endDay }} (the closer to 100% the better).
+            </p>
+
+            {% include 'plotly_thisuserMemoryEfficiency.html' %}
+
+            <p>
+                Using the memory efficiency, we can estimate how much memory was needed to run a job.
+                If all jobs above had been submitted with only the memory they needed (rounded up),
+                you would have emitted {{ usersActivity[user.userID].carbonFootprint_wasted_memoryOverallocation }} less
+                and saved {{ usersActivity[user.userID].cost_wasted_memoryOverallocation }}.
+            </p>
+        </div>
+
+
+    </div>
+</div>

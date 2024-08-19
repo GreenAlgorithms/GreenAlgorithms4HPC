@@ -2,8 +2,10 @@
 .idea/
 clustersData/
 testData/
-error_logs/
+error_logs_archived/
 support_files/
+frontend/templates/plotly*
+outputs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

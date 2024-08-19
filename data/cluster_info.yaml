@@ -1,0 +1,36 @@
+##
+## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
+## Fill in the values for your cluster: all the variables in <> need to be changed
+##
+---
+cluster_name: "<My cluster name>" # [str]
+granularity_memory_request: <6> # [number] in GB representing the smallest memory unit users can reserve
+partitions: # a list of the different partitions on the cluster
+  <partition name_1>: # name of the partition
+    type: <CPU> # [CPU or GPU]
+    model: "<Intel XXX>" # [str] the model of the processing core on this partition. Not actually used by the code but useful for reference for others.
+    TDP: <10> # [number] TDP of the processor, in W, per core
+  <partition name_2>: # name of the partition
+    type: <GPU> # [CPU or GPU]
+    model: "<NVIDIA XXX>" # [str] the model of the processing core on this partition. Not actually used by the code but useful for reference for others.
+    TDP: <250> # [number] For GPUs, the TDP is for the entire GPU
+    # For GPU partitions, we also need info about the CPUs available for support.
+    model_CPU: "<Intel XXX>" # [str] Not actually used by the code but useful for reference for others.
+    TDP_CPU: <10> # [number] TDP of the processor, in W, per core
+  # You can keep adding partitions to this
+PUE: <1.67> # [number > 1] Power Usage Effectiveness of the facility
+CI: <467> # [number] average carbon intensity of the geographic location, in gCO2e/kWh
+energy_cost:
+  cost: <0.34> # [number] in currency/kWh
+  currency: "<£>" # [str]
+#
+# Below are optional parameters if the html output is used.
+# HTML tags can be used
+#
+texts_intro:
+  CPU: "XX - XX W/core (see <a>here</a> for models)" # For example
+  GPU: "NVIDIA A100 (300 W) and NVIDIA Tesla P100 (250 W)" # For example
+#
+# Below are optional parameters to accommodate some clusters. Do not remove but can be ignored.
+#
+default_unit_RSS: 'K'

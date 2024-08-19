@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Green Algorithms dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.3.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.1.0/dist/css/materialize.min.css">
+    <link rel="stylesheet" href="styles.css">
+<!--    <link rel="icon" type="image/x-icon" href="https://www.ebi.ac.uk/favicon.ico">-->
+</head>
+<body>
+    <section class="container">
+        <header>
+            <!-- TODO make the page responsive -->
+            <nav id="top-nav">
+                <i class="fa-solid fa-seedling"></i>
+                <div id="title">
+                    <h1>Green Algorithms dashboard</h1>
+                    <h2>{{ institution }}</h2>
+                </div>
+            </nav>
+            <p>
+                Last updated: {{ last_updated }}
+            </p>
+        </header>
+
+        <div class="row">
+            <div class="col l2">
+                <div id="toc-wrapper">
+                    <ul class="section table-of-contents">
+                        <li><a href="#intro">Introduction</a></li>
+                        {% if include_user_context %}
+                            <li><a href="#user">User's data ({{ user.userID }})</a></li>
+                        {% endif %}
+                        <li><a href="#credits">Credits</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+
+<!--        starting column on the right -->
+            <div class="col l10">
+                <div id="intro" class="section scrollspy">
+                    <div class="card-panel warning">
+                        <p>
+                            This is an early version, please report any bug you find!
+                        </p>
+                    </div>
+
+                    <p>
+                        Computing is a major contributor to energy consumption, and thus is one of the main sources of
+                        the carbon emission of our research.
+                        In the context of the global climate crisis, it is imperative that individuals and organizations
+                        find ways to assess then reduce the carbon footprint of their work.
+                    </p>
+
+                    <p>
+                        This page aims to represent the carbon footprint that we are, collectively and individually,
+                        responsible for at {{ institution }}.
+                        SLURM jobs submitted to the {{ cluster_name }} High Performance Cluster are logged automatically
+                        (including information such as resource requested, run time, memory efficiency, etc.),
+                        and the corresponding carbon footprint  was calculated using the framework proposed
+                        by <a href="https://green-algorithms.org/">Green Algorithms</a> and the following assumptions:
+                    </p>
+
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>CPU</th>
+                                <td>{{ texts_intro.CPU }}</td>
+                            </tr>
+                            <tr>
+                                <th>GPU</th>
+                                <td>{{ texts_intro.GPU }}</td>
+                            </tr>
+                            <tr>
+                                <th>Memory power</th>
+                                <td>0.3725 W/GB</td>
+                            </tr>
+                            <tr>
+                                <th>Power usage effectiveness</th>
+                                <td>{{ PUE }}</td>
+                            </tr>
+                            <tr>
+                                <th>Carbon intensity</th>
+                                <td>{{ CI }} gCO<sub>2</sub>e/kWh</td>
+                            </tr>
+                            <tr>
+                                <th>Energy cost</th>
+                                <td>{{ energy_cost_perkWh.currency }}{{ energy_cost_perkWh.cost }}/kWh</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="card-panel info">
+                        <p>
+                            We built this tool in the hope to raise awareness of computing usage,
+                            highlight resources waste, and foster good computing practices.
+                            This is intended to be a lightweight carbon footprint calculator, not a cluster monitoring system.
+                        </p>
+                    </div>
+                </div>
+
+                {% if include_user_context %}
+                    {% include "_user.html" %}
+                {% endif %}
+
+                <div id="credits" class="section scrollspy">
+                    <h4>Credits</h4>
+                    <p>
+                        This dashboard is the combination of a template developed at EMBL-EBI by Matthias Blum and Alex Bateman,
+                        and the Green Algorithms project led by Loïc Lannelongue and Michael Inouye.
+                        The carbon footprint calculations are described on <a href="https://www.green-algorithms.org/">the Green Algorithms project's website</a>.
+                    </p>
+                </div>
+
+                <div id="contact" class="section scrollspy">
+                    <h4>Contact</h4>
+                    <p>
+                        If you want to report a bug or a user assigned to the wrong team,
+                        request a feature, or just give some general feedback, you can email LL582@medschl.cam.ac.uk.
+                    </p>
+                </div>
+
+                <div id="faq" class="section scrollspy">
+                    <h4>FAQ</h4>
+                    <p>
+                        <span class="question">How is the information on SLRUM jobs collected?</span>
+                        Logs are pulled using the `sacct` command. It's all powered by the GA4HPC methods,
+                        you can check it out <a href="https://www.green-algorithms.org/GA4HPC/">there</a>.
+                    </p>
+
+                    <p>
+                        <span class="question">Where can I ask more questions?</span>
+                        On the GitHub <a href="https://github.com/GreenAlgorithms/GreenAlgorithms4HPC/issues">here</a> or by email (see above)..
+                    </p>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+</body>
+</html>

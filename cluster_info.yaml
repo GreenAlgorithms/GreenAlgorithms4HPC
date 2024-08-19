@@ -2,7 +2,9 @@
 ## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
 ## Fill in the values for your cluster
 ##
+## Updated: 14/12/2023
 ---
+institution: "My institution"
 cluster_name: "My cluster" # [str]
 granularity_memory_request: 6 # [number] in GB,
 partitions: # a list of the different partitions on the cluster
@@ -18,6 +20,16 @@ partitions: # a list of the different partitions on the cluster
     TDP_CPU: 8
 PUE: 1.67 # [number > 1] Power Usage Effectiveness of the facility
 CI: 467 # [number] carbon intensity of the geographic location, in gCO2e/kWh
+energy_cost:
+  cost: 0.34 # in currency/kWh
+  currency: "£"
+#
+# Below are optional parameters if the dashboard output is used.
+# HTML tags can be used
+#
+texts_intro:
+  CPU: "XX W/core"
+  GPU: "e.g. NVIDIA A100 (300 W) and NVIDIA Tesla P100 (250 W)"
 #
 # Below are optional parameters to accommodate some clusters. Do not remove but can be ignored.
 #
