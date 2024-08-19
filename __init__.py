@@ -109,7 +109,7 @@ class validate_args():
         self._validate_output(args)
 
 if __name__ == "__main__":
-    print("Working dir0: ", os.getcwd()) # DEBUGONLY
+    # print("Working dir0: ", os.getcwd()) # DEBUGONLY
 
     args = create_arguments()
 
