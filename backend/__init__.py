@@ -66,12 +66,7 @@ def extract_data(args, cluster_info):
     WM.pull_logs()
 
     ### Log the output for debugging
-    # TODO cleanup file/dir management here
-    scripts_dir = os.path.dirname(os.path.realpath(__file__))
     if args.reportBug | args.reportBugHere:
-
-        # log_name = str(datetime.datetime.now().timestamp()).replace(".", "_")
-
         if args.reportBug:
             # Create an error_logs subfolder in the output dir
             errorLogsDir = os.path.join(args.outputDir2use['path'], 'error_logs')
