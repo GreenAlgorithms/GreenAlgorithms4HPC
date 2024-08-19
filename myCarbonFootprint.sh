@@ -14,13 +14,10 @@ userCWD="$(pwd)"
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 
-# The only requirement for the module is to start python 3.7 or later
-#module load miniconda/3
-
-# Test if the virtualenv GA_env already exists, and if not, creates it.
+# Test if the virtualenv GA_env already exists, and if not, creates it. Download python 3.8 or higher for better results.
 if [ ! -f GA_env/bin/activate ]; then
   echo "Need to create virtualenv"
-  python -m venv GA_env
+  /usr/bin/python3.8 -m venv GA_env
   source GA_env/bin/activate
   pip3 install -r requirements.txt
 else
