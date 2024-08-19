@@ -256,7 +256,8 @@ class WorkloadManager(Helpers_WM):
                 "-P"
             ]
 
-            logs = subprocess.run(bash_com, capture_output=True)
+            # logs = subprocess.run(bash_com, capture_output=True) # this line is the new way, but doesn't work with python 3.6 or earlier. line below is the legacy way. https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output
+            logs = subprocess.run(bash_com, stdout=subprocess.PIPE)
             self.logs_raw = logs.stdout
         else:
             foo = "Overriding logs_raw with: "
