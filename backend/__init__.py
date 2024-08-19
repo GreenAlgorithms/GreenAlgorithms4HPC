@@ -82,6 +82,7 @@ def extract_data(args, cluster_info):
 
     ### Turn usage logs into DataFrame
     WM.convert2dataframe()
+    check_empty_results(WM.logs_df, args)
 
     # And clean
     WM.clean_logs_df()
