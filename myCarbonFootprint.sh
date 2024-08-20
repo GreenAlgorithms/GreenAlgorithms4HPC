@@ -25,7 +25,7 @@ else
   source GA_env/bin/activate
 fi
 
-# Test if the python version is at least 3.7
+# Test if the python version is at least 3.8
 version_major=$(python -c 'import sys; print(sys.version_info[0])')
 version_minor=$(python -c 'import sys; print(sys.version_info[1])')
 if (( $version_major < 3 )); then
@@ -33,8 +33,8 @@ if (( $version_major < 3 )); then
   exit 1
 fi
 
-if (( $version_minor < 7 )); then
-  echo "The command python needs to refer to python3.7 or higher."
+if (( $version_minor < 8 )); then
+  echo "The command python needs to refer to python3.8 or higher."
   exit 1
 fi
 echo "Python versions: OK"
