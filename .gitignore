@@ -6,6 +6,7 @@ error_logs_archived/
 support_files/
 frontend/templates/plotly*
 outputs/*
+example_outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

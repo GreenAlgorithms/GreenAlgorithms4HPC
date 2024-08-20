@@ -11,9 +11,9 @@ directly on HPC clusters powered by SLURM (although it could work for other work
 As a user, it pulls your usage statistics from the workload manager's logs and then it estimate your carbon footprint based on this usage.
 It reports a range of statistics such as energy usage, carbon footprints, compute use, memory efficiency, impact of failed jobs etc.
 
-The default output is in the terminal, but we have now added the option of a richer html output (examples below).
+The default output is in the terminal (example below), but we have now added the option of a richer html output (example coming soon).
 
-TODO
+![alt text](example_files/Screenshot HPC 2024-08-20.png)
 
 ## Quick start
 
