@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO update to new code. I think maybe best to have two script, one for the first install (creates virtual env, etc), and then a regular one
-
 ## ~~~ TO BE EDITED TO BE TAILORED TO THE CLUSTER ~~~
 ##
 ## You only need to edit the module loading line (l.13), make sure you are loading python 3.7 or greater.
