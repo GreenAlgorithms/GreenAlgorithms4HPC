@@ -101,7 +101,15 @@ optional arguments:
     ```
 
 2. Edit `myCarbonFootprint.sh` line 20 to create the virtual environment with Python 3.8 or later. 
-The default line uses `/usr/bin/python3.8` but it may be somewhere else on your server.
+The default line is:
+    ```bash
+    /usr/bin/python3.8 -m venv GA_env
+    ```
+    But it may be something else on your server, for example:
+    ```bash
+    module load python/3.11.7
+    python -m venv GA_env
+    ```
 
 3. Make the bash script executable: 
     ```bash
