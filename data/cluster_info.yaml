@@ -3,6 +3,7 @@
 ## Fill in the values for your cluster: all the variables in <> need to be changed
 ##
 ---
+institution: "<My institution>" # [str]
 cluster_name: "<My cluster name>" # [str]
 granularity_memory_request: <6> # [number] in GB representing the smallest memory unit users can reserve
 partitions: # a list of the different partitions on the cluster
