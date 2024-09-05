@@ -13,7 +13,9 @@ It reports a range of statistics such as energy usage, carbon footprints, comput
 
 The default output is in the terminal (example below), but we have now added the option of a richer html output (example coming soon).
 
-![alt text](example_files/Screenshot HPC 2024-08-20.png)
+https://github.com/GreenAlgorithms/GreenAlgorithms4HPC/blob/main/example_files/Screenshot%20HPC%202024-08-20.png
+
+![example file](https://github.com/GreenAlgorithms/GreenAlgorithms4HPC/blob/main/example_files/Screenshot%20HPC%202024-08-20.png)
 
 ## Quick start
 
