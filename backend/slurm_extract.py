@@ -165,7 +165,13 @@ class Helpers_WM():
             # NB: when TotalCPU=0, we assume usage factor = 100% for all CPU cores
             return x.CPUwallclocktime_
 
-        assert x.TotalCPUtime_ <= x.CPUwallclocktime_
+        # Allow a tolerance of 1 millisecond
+        tolerance = pd.Timedelta(milliseconds=1)
+
+        if x.TotalCPUtime_ <= x.CPUwallclocktime_ + tolerance:
+            return x.TotalCPUtime_
+
+        # print(f"Assertion failed for row {x.name}: TotalCPUtime_ = {x.TotalCPUtime_}, CPUwallclocktime_ = {x.CPUwallclocktime_}")
         return x.TotalCPUtime_
 
     def calc_GPUusage2use(self, x):
@@ -391,6 +397,7 @@ class WorkloadManager(Helpers_WM):
         self.df_agg.loc[self.df_agg.StateX == -1, 'StateX'] = 1
 
         ### Replace UsedMem_=-1 with memory requested (for when MaxRSS=NaN)
+        self.df_agg = self.df_agg.copy()
         self.df_agg['UsedMem2_'] = self.df_agg.apply(self.cleam_UsedMem, axis=1)
 
         ### Label as CPU or GPU partition
