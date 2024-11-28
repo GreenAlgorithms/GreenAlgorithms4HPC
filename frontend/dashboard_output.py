@@ -65,6 +65,7 @@ class dashboard_html:
             'last_updated': datetime.datetime.now().strftime("%A %d %b %Y, %H:%M"),
             'startDay': args.startDay,
             'endDay': args.endDay,
+            'user': args.user,
             'institution': cluster_info['institution'],
             'cluster_name': cluster_info['cluster_name'],
             'PUE': cluster_info['PUE'],
