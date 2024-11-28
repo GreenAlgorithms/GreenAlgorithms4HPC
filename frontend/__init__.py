@@ -62,7 +62,7 @@ if __name__ == "__main__":
         except yaml.YAMLError as exc:
             print(exc)
 
-    extracted_data = main_backend(args)
+    df, df2, extracted_data = main_backend(args)
 
     # generate_dashboard_html(dict_stats=extracted_data, args=args, cluster_info=cluster_info, dict_deptGroupsUsers=dict_deptGroupsUsers, dict_users=dict_users)
 
