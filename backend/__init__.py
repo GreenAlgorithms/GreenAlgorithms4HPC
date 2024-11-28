@@ -232,7 +232,7 @@ def main_backend(args):
     df2 = enrich_data(df, fParams=fParams, GA=GA)
     summary_stats = summarise_data(df2, args=args)
 
-    return summary_stats
+    return df, df2, summary_stats
 
 if __name__ == "__main__":
 
