@@ -153,8 +153,26 @@ if __name__ == "__main__":
     df, df2, extracted_data = main_backend(args)
 
     main_frontend(extracted_data, args)
-    
+
+    print(df.columns)
+    print(df2.columns)
+    print(extracted_data.dtype)
     df2['SubmitDate'] = df2['SubmitDatetimeX'].dt.date
-    numerical_columns = df2.select_dtypes(include='number').columns
-    result = df2.groupby('SubmitDate')[['carbonFootprint', 'carbonFootprint_failedJobs', 'cost', 'cost_memoryNeededOnly', 'cost_failedJobs']].sum().reset_index()
-    result.to_csv(f"{args.userCWD}/data.csv", index=False)
+
+    result_submitdate = df2.groupby('SubmitDate').agg({
+    'carbonFootprint': 'sum',
+    'carbonFootprint_failedJobs': 'sum',
+    'cost': 'sum',
+    'cost_memoryNeededOnly': 'sum',
+    'cost_failedJobs': 'sum',
+    'UserX': 'first'}).reset_index()
+    result_submitdate.to_csv(f"{args.userCWD}/{args.user}_submitdate_data.csv", index=False)
+
+    result_jobname = df2.groupby('UIDX').agg({
+    'carbonFootprint': 'sum',
+    'carbonFootprint_failedJobs': 'sum',
+    'cost': 'sum',
+    'cost_memoryNeededOnly': 'sum',
+    'cost_failedJobs': 'sum',
+    'UserX': 'first'}).reset_index()
+    result_jobname.to_csv(f"{args.userCWD}/{args.user}_jobname_data.csv", index=False)
