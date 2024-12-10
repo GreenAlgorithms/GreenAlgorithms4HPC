@@ -90,12 +90,14 @@ def extract_data(args, cluster_info):
     check_empty_results(WM.df_agg, args)
 
     # Check that there is only one user's data
-    if len(set(WM.df_agg_X.UserX)) > 1:
-        raise ValueError(f"More than one user's logs was included: {set(WM.df_agg_X.UserX)}")
+    if len(set(WM.df_agg.UserX)) > 1:
+        raise ValueError(f"More than one user's logs was included: {set(WM.df_agg.UserX)}")
 
     # WM.df_agg_X.to_pickle("testData/df_agg_X_1.pkl") # DEBUGONLY used to test different steps offline
 
-    return WM.df_agg_X
+    # print(WM.df_agg.columns)
+
+    return WM.df_agg
 
 def enrich_data(df, fParams, GA):
 
