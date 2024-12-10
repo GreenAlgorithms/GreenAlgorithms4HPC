@@ -357,6 +357,7 @@ class WorkloadManager(Helpers_WM):
         ### Username and UID
         self.logs_df['UIDX'] = self.logs_df.UID
         self.logs_df['UserX'] = self.logs_df.User
+        self.logs_df = self.logs_df.dropna(subset=['UserX'])
 
         ### State
         customSuccessStates_list = self.args.customSuccessStates.split(',')
@@ -373,28 +374,28 @@ class WorkloadManager(Helpers_WM):
             print('Using old logs, "Account" information not available.')  # TODO: remove this after a while
             self.logs_df['Account_'] = ''
 
-        ### Aggregate per jobID
-        self.df_agg_0 = self.logs_df.groupby('single_jobID').agg({
-            'TotalCPUtime_': 'max',
-            'CPUwallclocktime_': 'max',
-            'WallclockTimeX': 'max',
-            'ReqMemX': 'max',
-            'UsedMem_': 'max',
-            'NCPUS_': 'max',
-            'NGPUS_': 'max',
-            'NNodes_': 'max',
-            'PartitionX': lambda x: ''.join(x),
-            'JobName_': 'first',
-            'SubmitDatetimeX': 'min',
-            'WorkingDir_': 'first',
-            'StateX': 'min',
-            'Account_': 'first',
-            'UIDX': 'first',
-            'UserX': 'first',
-        })
+        # ### Aggregate per jobID
+        # self.df_agg_0 = self.logs_df.groupby('single_jobID').agg({
+        #     'TotalCPUtime_': 'max',
+        #     'CPUwallclocktime_': 'max',
+        #     'WallclockTimeX': 'max',
+        #     'ReqMemX': 'max',
+        #     'UsedMem_': 'max',
+        #     'NCPUS_': 'max',
+        #     'NGPUS_': 'max',
+        #     'NNodes_': 'max',
+        #     'PartitionX': lambda x: ''.join(x),
+        #     'JobName_': 'first',
+        #     'SubmitDatetimeX': 'min',
+        #     'WorkingDir_': 'first',
+        #     'StateX': 'min',
+        #     'Account_': 'first',
+        #     'UIDX': 'first',
+        #     'UserX': 'first',
+        # })
 
         ### Remove jobs that are still running or currently queued
-        self.df_agg = self.df_agg_0.loc[self.df_agg_0.StateX != -2]
+        self.df_agg = self.logs_df.loc[self.logs_df.StateX != -2]
 
         ### Turn StateX==-2 into 1
         self.df_agg.loc[self.df_agg.StateX == -1, 'StateX'] = 1
