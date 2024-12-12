@@ -2,9 +2,11 @@
 import argparse
 import datetime
 import os
+import pandas as pd
 
 from backend import main_backend
 from frontend import main_frontend
+from additional_stats import *  
 
 def create_arguments():
     """
@@ -154,7 +156,17 @@ if __name__ == "__main__":
 
     main_frontend(extracted_data, args)
 
+    # print(df.columns)
+    # print(df2.columns)
+
     df2['SubmitDate'] = df2['SubmitDatetimeX'].dt.date
+
+    df2['TotalCPU (hours)'] = df2.apply(calc_CPU, axis=1)
+    df2['CPUtime (hours)'] = df2.apply(calc_CPUtime, axis=1)
+    df2['Efficientcy (TotalCPU / CPUtime hours)'] = df2.apply(calc_efficiency, axis=1)
+    df2['Cost (Pounds)'] = df2.apply(calc_cost, axis=1)
+
+    df2.to_csv(f"{args.userCWD}/{args.user}_all_data.csv", index=False)
 
     groupby_dict = {
     'carbonFootprint': 'sum',
@@ -162,10 +174,11 @@ if __name__ == "__main__":
     'cost': 'sum',
     'cost_memoryNeededOnly': 'sum',
     'cost_failedJobs': 'sum',
+    'Cost (Pounds)': 'sum',
     'UserX': 'first'}
 
-    result_submitdate = df2.groupby('SubmitDate').agg().reset_index()
+    result_submitdate = df2.groupby('SubmitDate').agg(groupby_dict).reset_index()
     result_submitdate.to_csv(f"{args.userCWD}/{args.user}_submitdate_data.csv", index=False)
 
-    result_jobname = df2.groupby('UIDX').agg(groupby_dict).reset_index()
+    result_jobname = df2.groupby('JobName').agg(groupby_dict).reset_index()
     result_jobname.to_csv(f"{args.userCWD}/{args.user}_jobname_data.csv", index=False)
