@@ -174,6 +174,7 @@ if __name__ == "__main__":
     'cost': 'sum',
     'cost_memoryNeededOnly': 'sum',
     'cost_failedJobs': 'sum',
+    'Cost (Pounds)': 'sum',
     'UserX': 'first'}
 
     result_submitdate = df2.groupby('SubmitDate').agg(groupby_dict).reset_index()

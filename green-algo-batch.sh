@@ -12,8 +12,6 @@ source ~/.bashrc
 
 userCWD="$(pwd)"
 
-# echo $userCWD
-
 cd /data/scratch/shared/RSE/GreenAlgorithms4HPC/
 
 mamba activate /data/scratch/shared/RSE/envs/GA_env

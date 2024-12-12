@@ -95,8 +95,6 @@ def extract_data(args, cluster_info):
 
     # WM.df_agg_X.to_pickle("testData/df_agg_X_1.pkl") # DEBUGONLY used to test different steps offline
 
-    # print(WM.df_agg.columns)
-
     return WM.df_agg
 
 def enrich_data(df, fParams, GA):
