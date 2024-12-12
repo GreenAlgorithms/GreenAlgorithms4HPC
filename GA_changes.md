@@ -6,7 +6,7 @@ We have set up a mamba environment for Green Algortithms so it works better on A
 2) `slurm_extract.py`
 The `slurm_extract.py` script was modified in several places to work on Alma:
 Assertion fails:
-The first assertion error occured in line `assert x.TotalCPUtime_ <= x.CPUwallclocktime_`. This is because TotalCPUtime_ takes into account milliseconds which CPUwallclocktime_ doesnt (it rounds the number down) which makes the CPU Wallclocktime smaller than Total CPU time. We changed this so a tolerance of a milliseconf is allowed:
+The first assertion error occured in line `assert x.TotalCPUtime_ <= x.CPUwallclocktime_`. This is because TotalCPUtime_ takes into account milliseconds where CPUwallclocktime_ doesnt (it rounds the number down). Hense this makes the CPU Wallclocktime smaller than Total CPU time. We changed this so a tolerance of a milliseconf is allowed:
 
 ```python
 tolerance = pd.Timedelta(milliseconds=1)
@@ -19,26 +19,26 @@ return x.TotalCPUtime_
 ```
 Second assertion failure occured in `assert x.NGPUS_ != 0`. This was commented out to allow for the code to run. 
 
-Third assertin error occured at line `assert (foo.WallclockTimeX.dt.total_seconds() == 0).all()` which was commented out to allow for code to run. 
+Third assertion error occured at line `assert (foo.WallclockTimeX.dt.total_seconds() == 0).all()` which was commented out to allow for code to run. 
 
 Additions:
-User flag was added to the sacct command to be able to generate Greel Algo reports on other users.
+User flag was added to the sacct command to be able to generate Green Algo reports on other users.
 
 `self.df_agg = self.df_agg.copy()` was added due to pandas error.
 
 3) `main_backend` function return 
-We have changed the return of the `main_backend` function so it also return `df` and `df2` dataframes. We find the `df2` dataframe useful for the purposes of calculating carbon footprint per day/per job for a user.
+We have changed the return of the `main_backend` function so it also returns `df` and `df2` dataframes. We find the `df2` dataframe useful for the purposes of calculating carbon footprint per day/per job for a user.
 
-3) `__init__.py` csv file creation 
-We added creation of a `data.csv` file in the home directory, which calculate the carbon footprint per day for a user. This is useful for our researches to know how sustainable their cluster usage is. 
+4) `__init__.py` csv file creation 
+We created a `data.csv` file in the home directory, which calculates the carbon footprint per day for a user. This is useful for our researchers to know how sustainable their cluster usage is. 
 
-4) Addition of user flag
+5) Addition of user flag
 As mentioned before, we added a user flag to be able to run reports for both the user who is logged in and other users in `slurm_extract.py` and `dashboard_output.py`
 
-5) Addition of extra bash scripts
+6) Addition of extra bash scripts
 We have created additional bash scripts for Alma:
-- `green-algo-batch.sh` - a script to run sbatch jobs from the 'Green Alma' app. This was created to reduce the time taken to run the calculations on the login node for researchers who extencively use Alma for high thoughput analysis. 
-- `run-GA-Alma.sh` - simple script to run Green Algorithms after irs inirial set upt with `./myCarbonFootprint_Alma.sh` script. 
+- `green-algo-batch.sh` - a script to run sbatch jobs from the 'Green Alma' app. This was added to optimise the calculation runtime on the login node for researchers who extensively use Alma for high thoughput analysis. 
+- `run-GA-Alma.sh` - simple script to run Green Algorithms after its initial setup with `./myCarbonFootprint_Alma.sh` script. 
 
-6) Modified the `cluster_info.yaml` file
+7) Modified the `cluster_info.yaml` file
 We have changed the `cluster_info.yaml` config file so it contains Alma hardware information.
