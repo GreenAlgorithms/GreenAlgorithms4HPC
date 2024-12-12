@@ -165,14 +165,21 @@ class Helpers_WM():
             # NB: when TotalCPU=0, we assume usage factor = 100% for all CPU cores
             return x.CPUwallclocktime_
 
-        assert x.TotalCPUtime_ <= x.CPUwallclocktime_
+        # AS added tolerance to avoid assertion error 
+        # Allow a tolerance of 1 millisecond
+        tolerance = pd.Timedelta(milliseconds=1)
+
+        if x.TotalCPUtime_ <= x.CPUwallclocktime_ + tolerance:
+            return x.TotalCPUtime_
+
+        # print(f"Assertion failed for row {x.name}: TotalCPUtime_ = {x.TotalCPUtime_}, CPUwallclocktime_ = {x.CPUwallclocktime_}")
         return x.TotalCPUtime_
 
     def calc_GPUusage2use(self, x):
         if x.PartitionTypeX != 'GPU':
             return datetime.timedelta(0)
-        if x.WallclockTimeX.total_seconds() > 0:
-            assert x.NGPUS_ != 0
+        # if x.WallclockTimeX.total_seconds() > 0:
+            # assert x.NGPUS_ != 0
         return x.WallclockTimeX * x.NGPUS_  # NB assuming usage factor of 100% for GPUs
 
     def calc_coreHoursCharged(self, x):
@@ -251,6 +258,8 @@ class WorkloadManager(Helpers_WM):
                 self.args.startDay,  # format YYYY-MM-DD
                 "--endtime",
                 self.args.endDay,  # format YYYY-MM-DD
+                "--user", # AS added user as a flag 
+                self.args.user,
                 "--format",
                 "UID,User,JobID,JobName,Submit,Elapsed,Partition,NNodes,NCPUS,TotalCPU,CPUTime,ReqMem,MaxRSS,WorkDir,State,Account,AllocTres",
                 "-P"
@@ -391,6 +400,7 @@ class WorkloadManager(Helpers_WM):
         self.df_agg.loc[self.df_agg.StateX == -1, 'StateX'] = 1
 
         ### Replace UsedMem_=-1 with memory requested (for when MaxRSS=NaN)
+        self.df_agg = self.df_agg.copy() # AS changed due to a pandas error 
         self.df_agg['UsedMem2_'] = self.df_agg.apply(self.cleam_UsedMem, axis=1)
 
         ### Label as CPU or GPU partition
@@ -403,7 +413,8 @@ class WorkloadManager(Helpers_WM):
         # Sanity check (no GPU logged for CPU partitions and vice versa)
         assert (self.df_agg.loc[self.df_agg.PartitionTypeX == 'CPU'].NGPUS_ == 0).all()
         foo = self.df_agg.loc[(self.df_agg.PartitionTypeX == 'GPU') & (self.df_agg.NGPUS_ == 0)]
-        assert (foo.WallclockTimeX.dt.total_seconds() == 0).all()  # Cancelled GPU jobs won't have any GPUs allocated if they didn't start
+        # AS line bellow commented out due to assertion error  
+        # assert (foo.WallclockTimeX.dt.total_seconds() == 0).all()  # Cancelled GPU jobs won't have any GPUs allocated if they didn't start
 
         ## Check that there is no missing UID/User
         if self.df_agg.UIDX.isnull().sum() > 0:

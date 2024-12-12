@@ -41,6 +41,8 @@ def create_arguments():
                         default='all')
     parser.add_argument('--filterAccount', type=str,
                         help='Only consider jobs charged under this account')
+    parser.add_argument('--user', type=str,
+                        help='Acccount of interest')
     parser.add_argument('--customSuccessStates', type=str, default='',
                         help="Comma-separated list of job states. By default, only jobs that exit with status CD or \
                                  COMPLETED are considered successful (PENDING, RUNNING and REQUEUD are ignored). \
@@ -148,6 +150,11 @@ if __name__ == "__main__":
     validate_args().all(args)
 
     ### Run backend to get data
-    extracted_data = main_backend(args)
+    df, df2, extracted_data = main_backend(args)
 
     main_frontend(extracted_data, args)
+    
+    df2['SubmitDate'] = df2['SubmitDatetimeX'].dt.date
+    numerical_columns = df2.select_dtypes(include='number').columns
+    result = df2.groupby('SubmitDate')[['carbonFootprint', 'carbonFootprint_failedJobs', 'cost', 'cost_memoryNeededOnly', 'cost_failedJobs']].sum().reset_index()
+    result.to_csv(f"{args.userCWD}/data.csv", index=False)
