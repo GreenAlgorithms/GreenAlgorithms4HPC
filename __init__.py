@@ -161,8 +161,8 @@ if __name__ == "__main__":
 
     df2['SubmitDate'] = df2['SubmitDatetimeX'].dt.date
 
-    df2['TotalCPU (hours)'] = df2.apply(calc_CPU, axis=1)
-    df2['CPUtime (hours)'] = df2.apply(calc_CPUtime, axis=1)
+    df2['TotalCPU (hours)'] = df2.apply(calc_used_CPU_hours, axis=1)
+    df2['CPUtime (hours)'] = df2.apply(calc_allocated_CPU_hours, axis=1)
     df2['Efficientcy (TotalCPU / CPUtime hours)'] = df2.apply(calc_efficiency, axis=1)
     df2['Cost (Pounds)'] = df2.apply(calc_cost, axis=1)
 
