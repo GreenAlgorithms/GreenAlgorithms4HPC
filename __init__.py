@@ -169,16 +169,27 @@ if __name__ == "__main__":
     df2.to_csv(f"{args.userCWD}/{args.user}_all_data.csv", index=False)
 
     groupby_dict = {
+    'UserX': 'first',
     'carbonFootprint': 'sum',
     'carbonFootprint_failedJobs': 'sum',
-    'cost': 'sum',
-    'cost_memoryNeededOnly': 'sum',
     'cost_failedJobs': 'sum',
     'Cost (Pounds)': 'sum',
-    'UserX': 'first'}
+    'Efficientcy (TotalCPU / CPUtime hours)': 'mean',}
+
+    groupby_dict2 = {
+    'UserX': 'first',
+    'AllocTRES': 'first',
+    'PartitionX': 'first',
+    'carbonFootprint': 'sum',
+    'carbonFootprint_failedJobs': 'sum',
+    'cost_failedJobs': 'sum',
+    'Cost (Pounds)': 'sum',
+    'Efficientcy (TotalCPU / CPUtime hours)': 'mean'}
 
     result_submitdate = df2.groupby('SubmitDate').agg(groupby_dict).reset_index()
+    # print("result_submitdate", result_submitdate)
     result_submitdate.to_csv(f"{args.userCWD}/{args.user}_submitdate_data.csv", index=False)
 
-    result_jobname = df2.groupby('JobName').agg(groupby_dict).reset_index()
+    result_jobname = df2.groupby('JobName').agg(groupby_dict2).reset_index()
+    # print("result_jobname", result_jobname)
     result_jobname.to_csv(f"{args.userCWD}/{args.user}_jobname_data.csv", index=False)
