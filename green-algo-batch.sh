@@ -12,8 +12,8 @@ source ~/.bashrc
 
 userCWD="$(pwd)"
 
-cd /data/scratch/shared/RSE/GreenAlgorithms4HPC/
+cd /data/rds/DIT/SCICOM/SCRSE/shared/apps/GreenAlgorithms4HPC/
 
-mamba activate /data/scratch/shared/RSE/envs/GA_env
-python3 /data/scratch/shared/RSE/GreenAlgorithms4HPC/__init__.py --userCWD "$userCWD" --user "$1" --startDay "$2" --endDay "$3"
+mamba activate /data/rds/DIT/SCICOM/SCRSE/shared/conda/GA_env
+python3 /data/rds/DIT/SCICOM/SCRSE/shared/apps/GreenAlgorithms4HPC/__init__.py --userCWD "$userCWD" --user "$1" --startDay "$2" --endDay "$3"
 mamba deactivate
