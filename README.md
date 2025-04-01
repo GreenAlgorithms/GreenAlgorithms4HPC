@@ -113,16 +113,11 @@ The default line is:
     python -m venv GA_env
     ```
 
-3. Make the bash script executable: 
-    ```bash
-    $ chmod +x shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
-    ```
-
-4. Edit `cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster
+3. Edit `data/cluster_info.yaml` to plug in the values corresponding to the hardware specs of your cluster
    (this is the tricky step). You can ask your HPC team and 
    you can find a lot of useful values on the Green Algorithms GitHub: https://github.com/GreenAlgorithms/green-algorithms-tool/tree/master/data
 
-5. Run the script a first time. It will check that the correct version of python is used 
+4. Run the script a first time. It will check that the correct version of python is used
 and will create the virtualenv with the required packages, based on `requirements.txt`:
 ```shell script
 $ shared_directory/GreenAlgorithms4HPC/myCarbonFootprint.sh
