@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greenalgorithms4HPC"
+version = "0.4"
+dependencies = [
+  "numpy","pandas>=2.0", "PyYAML", "jinja2", "plotly"
+]
+requires-python = ">=3.6"
+authors = [
+  {name = " Loïc Lannelongue", email = "loic.lannelongue@posteo.net"},
+]
+maintainers = [
+  {name = " Loïc Lannelongue", email = "loic.lannelongue@posteo.net"},
+]
+description = "Green Algorithms for High Performance Computing"
+
+[project.scripts]
+myCarbonFootprint = "greenalgorithms4HPC:main"
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml"]

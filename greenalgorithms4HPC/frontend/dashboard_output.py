@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-from frontend.helpers import formatText_footprint, formatText_treemonths, formatText_flying
+from greenalgorithms4HPC.frontend.helpers import formatText_footprint, formatText_treemonths, formatText_flying
 
 # class SilentUndefined(Undefined): # DEBUGONLY
 #     def _fail_with_undefined_error(self, *args, **kwargs):

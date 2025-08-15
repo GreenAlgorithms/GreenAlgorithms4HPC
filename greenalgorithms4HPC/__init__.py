@@ -3,9 +3,10 @@ import argparse
 import datetime
 import os
 
-from backend import main_backend
-from frontend import main_frontend
+from greenalgorithms4HPC.backend import main_backend
+from greenalgorithms4HPC.frontend import main_frontend
 
+SYSTEM_CONF="/etc/GreenAlgorithms4HPC.conf"
 def create_arguments():
     """
     Command line arguments for the tool.
@@ -108,17 +109,20 @@ class validate_args():
         self._validate_dates(args)
         self._validate_output(args)
 
-if __name__ == "__main__":
+def main():
     # print("Working dir0: ", os.getcwd()) # DEBUGONLY
-
     args = create_arguments()
 
     ## Decide which infrastructure info to use
-    if args.useOtherInfrastuctureInfo != '':
-        args.path_infrastucture_info = args.useOtherInfrastuctureInfo
-        print(f"Overriding infrastructure info with: {args.path_infrastucture_info}")
+    # Load cluster specific info
+    cluster_config = os.environ.get("GA4HPC_CONF", None)
+
+    if not cluster_config and os.path.exists(SYSTEM_CONF):
+        cluster_config = SYSTEM_CONF
     else:
-        args.path_infrastucture_info = 'data'
+        cluster_config = os.path.join(os.path.dirname(__file__), 'data')
+
+    args.path_infrastucture_info = cluster_config
 
     ## Organise the unique output directory (used for output report and logs export for debugging)
     ## creating a uniquely named subdirectory in whatever
@@ -149,5 +153,5 @@ if __name__ == "__main__":
 
     ### Run backend to get data
     extracted_data = main_backend(args)
-
     main_frontend(extracted_data, args)
+

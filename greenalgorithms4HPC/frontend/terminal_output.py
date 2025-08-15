@@ -1,6 +1,6 @@
 
 import math
-from frontend.helpers import formatText_footprint, formatText_treemonths, formatText_flying
+from greenalgorithms4HPC.frontend.helpers import formatText_footprint, formatText_treemonths, formatText_flying
 import pandas as pd
 import os
 
