@@ -115,12 +115,13 @@ def main():
 
     ## Decide which infrastructure info to use
     # Load cluster specific info
-    cluster_config = os.environ.get("GA4HPC_CONF", None)
+    cluster_config = os.environ.get("GA4HPC_CONFDIR", None)
 
-    if not cluster_config and os.path.exists(SYSTEM_CONF):
-        cluster_config = SYSTEM_CONF
-    else:
-        cluster_config = os.path.join(os.path.dirname(__file__), 'data')
+    if not cluster_config:
+        if os.path.exists(SYSTEM_CONF):
+            cluster_config = SYSTEM_CONF
+        else:
+            cluster_config = os.path.join(os.path.dirname(__file__), 'data')
 
     args.path_infrastucture_info = cluster_config
 
