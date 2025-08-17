@@ -11,16 +11,16 @@ userCWD="$(pwd)"
 # Cd into the directory where the GA files are located
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
-
+export GA4HPC_CONFDIR=$parent_path/greenalgorithms4HPC/data
 # Test if the virtualenv GA_env already exists, and if not, creates it. Download python 3.8 or higher for better results.
-if [ ! -f GA_env/bin/activate ]; then
+if [ ! -f .venv/bin/activate ]; then
   echo "Need to create virtualenv"
-  /usr/bin/python3.8 -m venv GA_env # this line needs updating to load python on your server
-  source GA_env/bin/activate
-  pip3 install -r requirements.txt
+  /usr/bin/python3.8 -m venv .venv # this line needs updating to load python on your server
+  source .venv/bin/activate
+  pip3 install .
 else
   echo "Virtualenv: OK"
-  source GA_env/bin/activate
+  source .venv/bin/activate
 fi
 
 # Test if the python version is at least 3.8
@@ -40,4 +40,4 @@ echo "Python versions: OK"
 
 # Run the python code and pass on the arguments
 #userCWD="/home/ll582/ with space" # DEBUGONLY
-python __init__.py "$@" --userCWD "$userCWD"
+myCarbonFootprint "$@" --userCWD "$userCWD"
