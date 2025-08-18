@@ -56,7 +56,7 @@ By default, it's under `GreenAlgorithms4HPC/outputs/`, but this can be changed.
 ## Full list of options
 
 ```
-usage: __init__.py [-h] [-S STARTDAY] [-E ENDDAY] [-o OUTPUT] [--outputDir OUTPUTDIR] [--filterCWD] [--filterJobIDs FILTERJOBIDS] [--filterAccount FILTERACCOUNT] [--customSuccessStates CUSTOMSUCCESSSTATES]
+usage: myCarbonFootprint [-h] [-S STARTDAY] [-E ENDDAY] [-o OUTPUT] [--outputDir OUTPUTDIR] [--filterCWD] [--filterJobIDs FILTERJOBIDS] [--filterAccount FILTERACCOUNT] [--customSuccessStates CUSTOMSUCCESSSTATES]
                    [--reportBug | --reportBugHere] [--useCustomLogs USECUSTOMLOGS]
 
 Calculate your carbon footprint on the server.
@@ -105,12 +105,12 @@ optional arguments:
 2. Edit `myCarbonFootprint.sh` line 20 to create the virtual environment with Python 3.8 or later. 
 The default line is:
     ```bash
-    /usr/bin/python3.8 -m venv GA_env
+    /usr/bin/python3.8 -m venv .venv
     ```
     But it may be something else on your server, for example:
     ```bash
     module load python/3.11.7
-    python -m venv GA_env
+    python -m venv .venv
     ```
 
 3. Make the bash script executable: 

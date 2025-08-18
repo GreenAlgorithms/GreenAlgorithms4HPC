@@ -4,8 +4,8 @@ import yaml
 import pandas as pd
 import numpy as np
 
-from backend.helpers import check_empty_results, simulate_mock_jobs
-from backend.slurm_extract import WorkloadManager
+from greenalgorithms4HPC.backend.helpers import check_empty_results, simulate_mock_jobs
+from greenalgorithms4HPC.backend.slurm_extract import WorkloadManager
 
 # print("Working dir1: ", os.getcwd()) # DEBUGONLY
 
@@ -220,7 +220,7 @@ def main_backend(args):
             print(exc)
 
     ### Load fixed parameters
-    with open("data/fixed_parameters.yaml", "r") as stream:
+    with open(os.path.join(args.path_infrastucture_info,"fixed_parameters.yaml"), "r") as stream:
         try:
             fParams = yaml.safe_load(stream)
         except yaml.YAMLError as exc:

@@ -2,8 +2,8 @@
 import yaml
 import os
 
-from frontend.terminal_output import generate_terminal_view
-from frontend.dashboard_output import dashboard_html
+from greenalgorithms4HPC.frontend.terminal_output import generate_terminal_view
+from greenalgorithms4HPC.frontend.dashboard_output import dashboard_html
 
 def main_frontend(dict_stats, args):
     ### Load cluster specific info
