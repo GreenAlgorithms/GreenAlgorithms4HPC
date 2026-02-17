@@ -1,3 +1,8 @@
+
+> [!NOTE]
+> __We are in the process of completely updating this tool (as part of a broader development of a new carbon monitoring dashboard), so please bear with us while we finalise this exciting new release!__ Of course, feel free to add issues here as these are accounted for in the new tool.
+
+
 # GA4HPC: Green Algorithms for High Performance Computing
 
 > :point_right: There are many different flabours of SLURM setups, so no doubt you'll find some bugs... 
